@@ -11,21 +11,19 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator
 # automorphism of the multiplicative group.
 # =================================================================
 
-# The KoalaBear Prime: P = 2^31 - 2^24 + 1
 P: int = 2**31 - 2**24 + 1
+"""The KoalaBear Prime: P = 2^31 - 2^24 + 1"""
 
-# The number of bits in the prime P.
 P_BITS: int = 31
+"""The number of bits in the prime P."""
 
-# The largest integer n such that 2^n divides (P - 1).
-#
-# P - 1 = 2^24 * 127
 TWO_ADICITY: int = 24
+"""
+The largest integer n such that 2^n divides (P - 1).
 
-# A pre-computed list of 2^n-th roots of unity.
-#
-# The element at index `n` is a generator for
-# the multiplicative subgroup of order 2^n.
+P - 1 = 2^24 * 127
+"""
+
 TWO_ADIC_GENERATORS: list[int] = [
     0x1,
     0x7F000000,
@@ -53,6 +51,12 @@ TWO_ADIC_GENERATORS: list[int] = [
     0x68E7DD49,
     0x6AC49F88,
 ]
+"""
+A pre-computed list of 2^n-th roots of unity.
+
+The element at index `n` is a generator for
+the multiplicative subgroup of order 2^n.
+"""
 
 
 # =================================================================
