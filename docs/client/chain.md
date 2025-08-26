@@ -110,3 +110,80 @@ def state_transition(
     if validate_result:
         assert block.state_root == hash_tree_root(state)
 ```
+
+```python
+def process_slots(state: State, slot: Slot) -> None:
+    assert state.slot < slot
+    while state.slot < slot:
+        process_slot(state)
+        state.slot = Slot(state.slot + 1)
+```
+
+```python
+def process_slot(state: BeaconState) -> None:
+    # Cache latest block header state root
+    if state.latest_block_header.state_root == Bytes32():
+        previous_state_root = hash_tree_root(state)
+        state.latest_block_header.state_root = previous_state_root
+```
+
+### Block processing
+
+```python
+def process_block(state: State, block: Block) -> None:
+    process_block_header(state, block)
+    process_operations(state, block.body)
+```
+
+#### Block header
+
+```python
+def process_block_header(state: State, block: Block) -> None:
+    # Verify that the slots match
+    assert block.slot == state.slot
+    # Verify that the block is newer than latest block header
+    assert block.slot > state.latest_block_header.slot
+    # Verify that proposer index is the correct index
+    assert block.proposer_index == block.slot % state.config.num_validators
+    # Verify that the parent matches
+    assert block.parent_root == hash_tree_root(state.latest_block_header)
+
+    # If this was first block post genesis, 3sf mini special treatment is required
+    # to correctly set genesis block root as already justified and finalized. 
+    # This is not possible at the time of genesis state generation and are set at 
+    # zero bytes because genesis block is calculated using genesis state causing a 
+    # circular dependancy
+    if(state.latest_block_header.slot == 0)
+        # block.parent_root is the genesis root
+        state.latest_justified.root = block.parent_root
+        state.latest_finalized.root = block.parent_root
+
+    # Cache current block as the new latest block
+    state.latest_block_header = BeaconBlockHeader(
+        slot=block.slot,
+        proposer_index=block.proposer_index,
+        parent_root=block.parent_root,
+        state_root=Bytes32(),  # Overwritten in the next process_slot call
+        body_root=hash_tree_root(block.body),
+    )
+```
+
+#### Operations
+
+```python
+def process_operations(state: State, body: BlockBody) -> None:
+    # process attestations/votes
+    process_attestations(state, body.votes)
+    # other operations will get added as the functionality evolves
+```
+
+```python
+def process_attestations(state: State, votes: Vote[]) -> None:
+    # From 3sf-mini/consensus.py
+    # Construct already done justifications map from flattened justifications_roots and
+    # justifications_validators ssz lists. Clients can maintain/track an in memory map
+    # in normal operations as part of local state object and skip this step but this 
+    # will still need to be generated while running STF in prover
+    justifications = generate_justifications_map(state.justifications_roots, state.justifications_validators)
+
+```
