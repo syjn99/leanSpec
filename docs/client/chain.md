@@ -58,13 +58,17 @@ This document specs the behavior and functionality of the lean chain. This is a 
 
 ### State accessors
 
-#### `get_justifications_map`
+#### `get_justifications`
 
-It is invoked with state as input `get_justifications_map(state)`fetches cached map for justifications under consideration. If not cached the map is to be constructed from the flattened data from state:
+It is invoked with state as input `get_justifications(state)`fetches cached map for justifications under consideration. If not cached the map is to be constructed from the flattened data from state:
  - `state.justifications_roots` which is a list of block roots that are under voting consideration
  - `state.justifications_validators` which are flattened list of validator ids which have voted for the respective roots
 
  Note that in prover, one would need to construct this map on the fly inside zkVMs.
+
+### State mutators
+
+#### `set_justifications`
 
 ## Genesis
 
@@ -200,13 +204,49 @@ def process_operations(state: State, body: BlockBody) -> None:
 
 ```python
 def process_attestations(state: State, votes: Vote[]) -> None:
-    # From 3sf-mini/consensus.py
-    #
     # get justifications, justified slots and historical block hashes are already upto
     # date as per the processing in process_block_header
-    justifications = get_justifications_map(state)
+    justifications = get_justifications(state)
 
-    # apply votes
+    # From 3sf-mini/consensus.py - apply votes
+    for vote in votes:
+        # Ignore votes whose source is not already justified,
+        # or whose target is not in the history, or whose target is not a
+        # valid justifiable slot
+        if (
+            state.justified_slots[vote.source_slot] is False
+            or vote.source != state.historical_block_hashes[vote.source_slot]
+            or vote.target != state.historical_block_hashes[vote.target_slot]
+            or vote.target_slot <= vote.source_slot
+            or not is_justifiable_slot(state.latest_finalized_slot, vote.target_slot)
+        ):
+            continue
 
+        # Track attempts to justify new hashes
+        if vote.target not in justifications:
+            state.justifications[vote.target] = [False] * state.config.num_validators
 
+        if not justifications[vote.target][vote.validator_id]:
+            state.justifications[vote.target][vote.validator_id] = True
+
+        count = sum(justifications[vote.target])
+
+        # If 2/3 voted for the same new valid hash to justify
+        if count == (2 * state.config.num_validators) // 3:
+            state.latest_justified_hash = vote.target
+            state.latest_justified_slot = vote.target_slot
+            state.justified_slots[vote.target_slot] = True
+            del justifications[vote.target]
+
+            # Finalization: if the target is the next valid justifiable
+            # hash after the source
+            if not any(
+                is_justifiable_slot(state.latest_finalized_slot, slot)
+                for slot in range(vote.source_slot + 1, vote.target_slot)
+            ):
+                state.latest_finalized_hash = vote.source
+                state.latest_finalized_slot = vote.source_slot
+
+    # flatten and set updated justifications back to the state
+    set_justifications(state, justifications)
 ```
