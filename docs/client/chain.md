@@ -86,6 +86,27 @@ Let `genesis_block = Block(state_root=hash_tree_root(genesis_state))`.
 
 ## STF
 
-The state transition functions follows on the lines of beacon chain STF except that there is no epoch processing. Furthermore to keep the STF prover friendly, all signatures in the block whether its signed block signature or signed votes signatures, will be verified outside the STF with a flag to STF indicating the successful verification (or not) of all signatures in the block.
+The state transition function follows on the lines of beacon chain STF except that there is no epoch processing. Furthermore to keep the STF prover friendly, all signatures in the block whether its signed block signature or signed votes signatures, will be verified outside the STF with a boolean flag `valid_signatures` to STF indicating the successful verification (or not) of all signatures in the block.
 
+The post-state corresponding to a pre-state `state` and a signed block
+`signed_block` is defined as `state_transition(state, signed_block)`. State
+transitions that trigger an unhandled exception (e.g. a failed `assert` or an
+out-of-range list access) are considered invalid. State transitions that cause a
+`uint64` overflow or underflow are also considered invalid.
 
+```python
+def state_transition(
+    state: State, signed_block: SignedBlock, valid_signatures: bool, validate_result: bool = True
+) -> None:
+    # Verify signatures
+    assert valid_signatures == True
+
+    block = signed_block.message
+    # Process slots (including those with no blocks) since block
+    process_slots(state, block.slot)
+    # Process block
+    process_block(state, block)
+    # Verify state root
+    if validate_result:
+        assert block.state_root == hash_tree_root(state)
+```
