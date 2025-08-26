@@ -5,6 +5,9 @@
 - [Configuration](#Configuration)
   - [Time parameters](#Time parameters)
 - [Presets](#Presets)
+- [Genesis](#genesis)
+  - [Genesis state](#genesis-state)
+  - [Genesis block](#genesis-block)
 - [STF](#STF)
 
 <!-- mdformat-toc end -->
@@ -24,8 +27,14 @@ This document specs the behavior and functionality of the lean chain. This is a 
   This is beacon style chaining via latest_block_header in state verified against parent hash of the new block. LMD-Ghost (without application of beacon chain style filter block tree)
 2. 3SF mini justification & finalization
   Departing from the beacon chain epoch centric processing, the lean chain employs a slightly translated version of the 3SF mini where all validators vote every slot.
-3. No Aggregation
+3. Empty signatures
+  Since we will be moving to post quantum signatures `Devnet1` onwards, `Devnet0` data is generated with zero bytes signatures with no signature verification involved. This means voting is a trusted process where the client creates a vote as per their assigned validators.
+4. No Aggregation
   The votes casted in the network are simply consumed and packed without aggregation. Beacon style aggregation will be introduced in the Devnet 2.
+5. Round robin proposals
+  The proposal assignment process has also been kept simple to just assign the proposals based on a round robin process based on the validator index. This makes proposal also a trusted process where the client proposes a block as per their assigned validators.
+5. Simplified Validators
+  There is no validator deposit, activation, withdrawal or slashing making the validator lifecyle super simple. Each validator has the weight of `1` and since validators don't even generate signatures, there is no validator tracking in the state. Validators are assigned to the clients based on a config file.
 
 ## Configuration
 
@@ -44,3 +53,30 @@ This document specs the behavior and functionality of the lean chain. This is a 
 | ------------------------------ | ------------------------------------- | :--------------: | :-----------: |
 | `HISTORICAL_ROOTS_LIMIT`       | `uint64(2**18)` (= 262,144)           | historical roots |   12.1 days   |
 | `VALIDATOR_REGISTRY_LIMIT`     | `uint64(2**12)` (= 4,096)             |    validators    |               |
+
+## Genesis
+
+The genesis for lean devnets especially `Devnet0` is rather simple. The only relevant parameters are `genesis_time` and `num_validators`. Even though `Devnet0` has no individual validators tracking, there would also be no need for `genesis_validators_root` going further as well because the state and hence state root would already encode the genesis validator's array.
+
+### Genesis state
+
+```python
+def generate_state(genesis_time: uint64, num_validators: uint64) -> State {
+  state = State(
+    config=Config(
+      genesis_time=genesis_time,
+      num_validators=num_validators,
+    ),
+    latest_block_header=BlockHeader(body_root=hash_tree_root(BeaconBlockBody())),
+  );
+
+  return state;
+}
+```
+
+## STF
+
+The state transition functions follows on the lines of beacon chain STF except that there is no epoch processing. 
+Also note that to keep the STF prover friendly, all signatures in the block weather its signed block signature or signed votes signatures, will be verified outside the STF with a flag to STF indicating the successful verification (or not) of all signatures in the block.
+
+
