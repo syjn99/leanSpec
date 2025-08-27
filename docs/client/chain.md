@@ -191,15 +191,18 @@ def process_block_header(state: State, block: Block) -> None:
         state.latest_justified.root = block.parent_root
         state.latest_finalized.root = block.parent_root
 
+    # now that we can vote on parent, push it at its correct slot index in the structures
+    state.historical_block_hashes.push(block.parent_root)
+    # genesis block is always justified
+    state.justified_slots.push( state.latest_block_header.slot == 0 ? True : False)
+
+    # if there were empty slots, push zero hash for those ancestors
     num_empty_slots = block.slot - state.latest_block_header.slot -1;
     while(num_empty_slots > 0){
       state.historical_block_hashes.push(ZERO_HASH)
       state.justified_slots.push(False)
       num_empty_slots--
     }
-    # update historical block hashes and justified_slots accordingly
-    state.historical_block_hashes.push(block.parent_root)
-    state.justified_slots.push(False)
 
     # Cache current block as the new latest block
     state.latest_block_header = BeaconBlockHeader(
