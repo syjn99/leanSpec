@@ -18,7 +18,8 @@ This document specs the behavior and functionality of the lean chain. This is a 
 
 | Devnet | Purpose                    | ETA |
 | ------ | -------                    | :-: |
-| 0      | pq signature preparation   | Oct 2025 |
+| 0      | minimal consensus          | Sep 2025 |
+| 1      | pq signature               | Oct 2025 |
 
 
 ### Devnet 0 Functionality
