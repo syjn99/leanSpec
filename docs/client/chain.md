@@ -232,27 +232,27 @@ def process_attestations(state: State, votes: Vote[]) -> None:
         # or whose target is not in the history, or whose target is not a
         # valid justifiable slot
         if (
-            state.justified_slots[vote.source_slot] is False
+            state.justified_slots[vote.source.slot] is False
             # This condition is missing in 3sf mini but has been added here because
             # we don't want to re-introduce the target again for remaining votes if
             # the slot is already justified and its tracking already cleared out 
             # from justifications map
-            or state.justified_slots[vote.target_slot] is True
-            or vote.source != state.historical_block_hashes[vote.source_slot]
-            or vote.target != state.historical_block_hashes[vote.target_slot]
-            or vote.target_slot <= vote.source_slot
+            or state.justified_slots[vote.target.slot] is True
+            or vote.source.root != state.historical_block_hashes[vote.source.slot]
+            or vote.target.root != state.historical_block_hashes[vote.target.slot]
+            or vote.target.slot <= vote.source.slot
             or not is_justifiable_slot(state.latest_finalized_slot, vote.target_slot)
         ):
             continue
 
         # Track attempts to justify new hashes
-        if vote.target not in justifications:
-            justifications[vote.target] = [False] * state.config.num_validators
+        if vote.target.root not in justifications:
+            justifications[vote.target.root] = [False] * state.config.num_validators
 
-        if not justifications[vote.target][vote.validator_id]:
-            justifications[vote.target][vote.validator_id] = True
+        if not justifications[vote.target.root][vote.validator_id]:
+            justifications[vote.target.root][vote.validator_id] = True
 
-        count = sum(justifications[vote.target])
+        count = sum(justifications[vote.target.root])
 
         # If 2/3 voted for the same new valid hash to justify
         # in 3sf mini this is strict equality, but we have updated it to >=
@@ -260,19 +260,17 @@ def process_attestations(state: State, votes: Vote[]) -> None:
         # to prevent integer division which could lead to less than 2/3 of validators
         # justifying specially if the num_validators is low in testing scenarios
         if 3 * count >= (2 * state.config.num_validators):
-            state.latest_justified_hash = vote.target
-            state.latest_justified_slot = vote.target_slot
-            state.justified_slots[vote.target_slot] = True
-            del justifications[vote.target]
+            state.latest_justified = vote.target
+            state.justified_slots[vote.target.slot] = True
+            del justifications[vote.target.root]
 
             # Finalization: if the target is the next valid justifiable
             # hash after the source
             if not any(
-                is_justifiable_slot(state.latest_finalized_slot, slot)
-                for slot in range(vote.source_slot + 1, vote.target_slot)
+                is_justifiable_slot(state.latest_finalized.slot, slot)
+                for slot in range(vote.source.slot + 1, vote.target.slot)
             ):
-                state.latest_finalized_hash = vote.source
-                state.latest_finalized_slot = vote.source_slot
+                state.latest_finalized = vote.source
 
     # flatten and set updated justifications back to the state
     set_justifications(state, justifications)
