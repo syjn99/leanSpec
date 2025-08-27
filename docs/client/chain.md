@@ -198,11 +198,10 @@ def process_block_header(state: State, block: Block) -> None:
 
     # if there were empty slots, push zero hash for those ancestors
     num_empty_slots = block.slot - state.latest_block_header.slot -1;
-    while(num_empty_slots > 0){
+    while num_empty_slots > 0):
       state.historical_block_hashes.push(ZERO_HASH)
       state.justified_slots.push(False)
-      num_empty_slots--
-    }
+      num_empty_slots -= 1;
 
     # Cache current block as the new latest block
     state.latest_block_header = BeaconBlockHeader(
