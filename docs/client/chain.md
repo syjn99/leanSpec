@@ -106,7 +106,7 @@ def generate_genesis_state(genesis_time: uint64, num_validators: uint64) -> Stat
       genesis_time=genesis_time,
       num_validators=num_validators,
     ),
-    latest_block_header=BlockHeader(body_root=hash_tree_root(BeaconBlockBody())),
+    latest_block_header=BlockHeader(body_root=hash_tree_root(BlockBody())),
   );
 
   return state;
