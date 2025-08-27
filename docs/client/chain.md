@@ -254,7 +254,10 @@ def process_attestations(state: State, votes: Vote[]) -> None:
 
         # If 2/3 voted for the same new valid hash to justify
         # in 3sf mini this is strict equality, but we have updated it to >=
-        if count >= (2 * state.config.num_validators) // 3:
+        # also have modified it from count >= (2 * state.config.num_validators) // 3
+        # to prevent integer division which could lead to less than 2/3 of validators
+        # justifying specially if the num_validators is low in testing scenarios
+        if 3 * count >= (2 * state.config.num_validators):
             state.latest_justified_hash = vote.target
             state.latest_justified_slot = vote.target_slot
             state.justified_slots[vote.target_slot] = True
