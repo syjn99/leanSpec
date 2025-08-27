@@ -195,6 +195,7 @@ def process_block_header(state: State, block: Block) -> None:
     while(num_empty_slots > 0){
       state.historical_block_hashes.push(ZERO_HASH)
       state.justified_slots.push(False)
+      num_empty_slots--
     }
     # update historical block hashes and justified_slots accordingly
     state.historical_block_hashes.push(block.parent_root)
