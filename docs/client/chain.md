@@ -107,7 +107,7 @@ def generate_genesis_state(genesis_time: uint64, num_validators: uint64) -> Stat
       num_validators=num_validators,
     ),
     latest_block_header=BlockHeader(body_root=hash_tree_root(BlockBody())),
-  );
+  )
 
   return state;
 }
