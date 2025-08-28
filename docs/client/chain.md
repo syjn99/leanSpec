@@ -57,20 +57,66 @@ This document specs the behavior and functionality of the lean chain. This is a 
 
 ## Helper functions
 
+_Note:_ The definitions below are for specification purposes and are not necessarily optimal implementations.
+
 ### State accessors
 
 #### `get_justifications`
 
-It is invoked with state as input `get_justifications(state)`fetches cached map for justifications under consideration. If not cached the map is to be constructed from the flattened data from state:
- - `state.justifications_roots` which is a list of block roots that are under voting consideration
- - `state.justifications_validators` which are flattened list of validator ids which have voted for the respective roots
+Returns a map of `root -> justifications` constructed from the flattened data in
+the state:
 
- Note that in prover, one would need to construct this map on the fly inside zkVMs.
+ - `state.justifications_roots` which is a list of block roots that are under
+   voting consideration
+ - `state.justifications_validators` which are flattened list of validator ids
+   which have voted for the respective roots
 
-### State mutators
+A client implementation may cache this map on the first construction for performance.
+
+```python
+def get_justifications(state: State) -> Dict[str, List[bool]]:
+    justifications = {}
+
+    for i, root in enumerate(state.justifications_roots):
+        # Calculate the relevant index range in the flattened bitlist for the current root
+        start_idx = i * VALIDATOR_REGISTRY_LIMIT
+        end_idx = start_idx + VALIDATOR_REGISTRY_LIMIT
+
+        # Get the slice of the bitlist for this root
+        validator_votes = state.justifications_validators[start_idx:end_idx]
+
+        # Convert bitlist to list of booleans
+        votes_list = [bool(validator_votes[j]) for j in range(len(validator_votes))]
+
+        # Store in the justifications map
+        justifications[root] = votes_list
+
+    return justifications
+```
 
 #### `set_justifications`
 
+Saves a map of `root -> justifications` back into the state's flattened data structure.
+
+```python
+def set_justifications(state: State, justifications: Dict[str, List[bool]]) -> None:
+    justifications_roots = List[Bytes32, HISTORICAL_ROOTS_LIMIT]
+    flattened_justifications = []
+
+    for root, votes in justifications.items():
+        # Assert that votes list has exactly VALIDATOR_REGISTRY_LIMIT items.
+        # If the length is incorrect, the constructed bitlist will be corrupt.
+        assert len(votes) == VALIDATOR_REGISTRY_LIMIT
+
+        justifications_roots.append(root)
+        flattened_justifications.extend(votes)
+
+    # Create a new Bitlist with all the flattened votes
+    justifications_validators = Bitlist[HISTORICAL_ROOTS_LIMIT * VALIDATOR_REGISTRY_LIMIT](*flattened_justifications)
+
+    state.justifications_roots = justifications_roots
+    state.justifications_validators = justifications_validators
+```
 
 ### Misc
 
