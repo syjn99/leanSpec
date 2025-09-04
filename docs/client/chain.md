@@ -263,19 +263,20 @@ def process_block_header(state: State, block: Block) -> None:
 
 ```python
 def process_operations(state: State, body: BlockBody) -> None:
-    # process attestations/votes
-    process_attestations(state, body.votes)
+    # process attestations
+    process_attestations(state, body.attestations)
     # other operations will get added as the functionality evolves
 ```
 
 ```python
-def process_attestations(state: State, votes: Vote[]) -> None:
+def process_attestations(state: State, attestations: SignedVote[]) -> None:
     # get justifications, justified slots and historical block hashes are already upto
     # date as per the processing in process_block_header
     justifications = get_justifications(state)
 
     # From 3sf-mini/consensus.py - apply votes
-    for vote in votes:
+    for signed_vote in attestations:
+        vote = signed_vote.message
         # Ignore votes whose source is not already justified,
         # or whose target is not in the history, or whose target is not a
         # valid justifiable slot
@@ -297,8 +298,8 @@ def process_attestations(state: State, votes: Vote[]) -> None:
         if vote.target.root not in justifications:
             justifications[vote.target.root] = [False] * state.config.num_validators
 
-        if not justifications[vote.target.root][vote.validator_id]:
-            justifications[vote.target.root][vote.validator_id] = True
+        if not justifications[vote.target.root][signed_vote.validator_id]:
+            justifications[vote.target.root][signed_vote.validator_id] = True
 
         count = sum(justifications[vote.target.root])
 

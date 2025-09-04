@@ -66,10 +66,10 @@ class BlockHeader(Container):
 
 ```python
 class BlockBody(Container):
-    votes: List[Vote, VALIDATOR_REGISTRY_LIMIT]
+    attestations: List[SignedVote, VALIDATOR_REGISTRY_LIMIT]
 ```
 
-Remark: `votes` will be replaced by aggregated attestations.
+Remark: `SignedVote` will be replaced by aggregated attestations.
 
 ## `SignedBlock`
 
@@ -81,9 +81,10 @@ class SignedBlock(Container):
 
 ## `Vote`
 
+Vote is the attestation data that can be aggregated. Although note there is no aggregation yet in `devnet0`.
+
 ```python
 class Vote(Container):
-    validator_id: uint64
     slot: uint64
     head: Checkpoint
     target: Checkpoint
@@ -94,8 +95,21 @@ class Vote(Container):
 
 ```python
 class SignedVote(Container):
-    data: Vote,
+    validator_id: uint64,
+    message: Vote,
+    # signature over vote message only as it would be aggregated later in attestation
     signature: Bytes32,
+```
+
+#### `Attestation`
+
+The votes are aggregated in `Attestation` similar to beacon protocol but without complication of committes. This is currently not used in `devnet0`.
+
+```python
+class Attestation(Container):
+    aggregation_bits: Bitlist[VALIDATOR_REGISTRY_LIMIT]
+    message: Vote
+    signature: Bytes32
 ```
 
 ## Remarks
