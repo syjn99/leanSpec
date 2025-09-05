@@ -63,7 +63,6 @@ class BlockHeader(Container):
 
 ## `BlockBody`
 
-
 ```python
 class BlockBody(Container):
     attestations: List[SignedVote, VALIDATOR_REGISTRY_LIMIT]
@@ -76,7 +75,7 @@ Remark: `SignedVote` will be replaced by aggregated attestations.
 ```python
 class SignedBlock(Container):
     message: Block,
-    signature: Bytes32,
+    signature: Vector[byte, 4000],
 ```
 
 ## `Vote`
@@ -98,7 +97,7 @@ class SignedVote(Container):
     validator_id: uint64,
     message: Vote,
     # signature over vote message only as it would be aggregated later in attestation
-    signature: Bytes32,
+    signature: Vector[byte, 4000],
 ```
 
 #### `Attestation`
@@ -109,7 +108,7 @@ The votes are aggregated in `Attestation` similar to beacon protocol but without
 class Attestation(Container):
     aggregation_bits: Bitlist[VALIDATOR_REGISTRY_LIMIT]
     message: Vote
-    signature: Bytes32
+    signature: List[byte, 4000]
 ```
 
 ## Remarks
