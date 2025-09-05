@@ -232,7 +232,7 @@ def process_block_header(state: State, block: Block) -> None:
     # This is not possible at the time of genesis state generation and are set at 
     # zero bytes because genesis block is calculated using genesis state causing a 
     # circular dependancy
-    if(state.latest_block_header.slot == 0)
+    if state.latest_block_header.slot == 0:
         # block.parent_root is the genesis root
         state.latest_justified.root = block.parent_root
         state.latest_finalized.root = block.parent_root
@@ -240,17 +240,17 @@ def process_block_header(state: State, block: Block) -> None:
     # now that we can vote on parent, push it at its correct slot index in the structures
     state.historical_block_hashes.push(block.parent_root)
     # genesis block is always justified
-    state.justified_slots.push( state.latest_block_header.slot == 0 ? True : False)
+    state.justified_slots.push(state.latest_block_header.slot == 0)
 
     # if there were empty slots, push zero hash for those ancestors
-    num_empty_slots = block.slot - state.latest_block_header.slot -1;
-    while num_empty_slots > 0):
-      state.historical_block_hashes.push(ZERO_HASH)
-      state.justified_slots.push(False)
-      num_empty_slots -= 1;
+    num_empty_slots = block.slot - state.latest_block_header.slot - 1
+    while num_empty_slots > 0:
+        state.historical_block_hashes.push(ZERO_HASH)
+        state.justified_slots.push(False)
+        num_empty_slots -= 1
 
     # Cache current block as the new latest block
-    state.latest_block_header = BeaconBlockHeader(
+    state.latest_block_header = BlockHeader(
         slot=block.slot,
         proposer_index=block.proposer_index,
         parent_root=block.parent_root,
