@@ -269,7 +269,7 @@ def process_operations(state: State, body: BlockBody) -> None:
 ```
 
 ```python
-def process_attestations(state: State, attestations: SignedVote[]) -> None:
+def process_attestations(state: State, attestations: List[SignedVote]) -> None:
     # get justifications, justified slots and historical block hashes are already upto
     # date as per the processing in process_block_header
     justifications = get_justifications(state)
