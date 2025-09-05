@@ -108,6 +108,7 @@ The votes are aggregated in `Attestation` similar to beacon protocol but without
 class Attestation(Container):
     aggregation_bits: Bitlist[VALIDATOR_REGISTRY_LIMIT]
     message: Vote
+    # this is an aggregated zk proof and is not a fix size signature 
     signature: List[byte, 4000]
 ```
 
