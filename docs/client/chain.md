@@ -146,7 +146,7 @@ where:
 ### Genesis state
 
 ```python
-def generate_genesis_state(genesis_time: uint64, num_validators: uint64) -> State {
+def generate_genesis_state(genesis_time: uint64, num_validators: uint64) -> State:
   state = State(
     config=Config(
       genesis_time=genesis_time,
