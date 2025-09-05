@@ -25,7 +25,7 @@ This document specs the behavior and functionality of the lean chain. This is a 
 ### Devnet 0 Functionality
 
 1. Chain-ing
-  This is beacon style chaining via latest_block_header in state verified against parent hash of the new block. LMD-Ghost (without application of beacon chain style filter block tree)
+  This is beacon style chaining via `latest_block_header` in state verified against parent hash of the new block. LMD-Ghost (without application of beacon chain style filter block tree)
 2. 3SF mini justification & finalization
   Departing from the beacon chain epoch centric processing, the lean chain employs a slightly translated version of the 3SF mini where all validators vote every slot.
 3. Empty signatures
