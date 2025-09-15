@@ -6,7 +6,9 @@ Gossipsub protocol
 """
 
 import hashlib
-from typing import Callable, Optional
+from typing import Annotated, Callable, Optional
+
+from pydantic import Field
 
 from lean_spec.subspecs.chain.config import DEVNET_CONFIG
 from lean_spec.subspecs.networking.config import (
@@ -60,10 +62,7 @@ class GossipsubParameters(StrictBaseModel):
     """
 
 
-_MessageId = NewType("MessageId", bytes)
-"""Static analysis to prevent accidental misuse of generic bytes."""
-
-MessageId = Annotated[_MessageId, Field(min_length=20, max_length=20)]
+MessageId = Annotated[bytes, Field(min_length=20, max_length=20)]
 """A 20-byte ID for gossipsub messages."""
 
 
@@ -75,6 +74,7 @@ class GossipsubMessage:
     message ID, correctly handling snappy decompression. The generated ID is
     cached for efficiency.
     """
+
     def __init__(
         self,
         topic: bytes,
@@ -93,7 +93,7 @@ class GossipsubMessage:
         self.raw_data: bytes = data
         self._snappy_decompress = snappy_decompress
         # Cache for the computed ID
-        self._id: Optional[MessageId] = None  
+        self._id: Optional[MessageId] = None
 
     @property
     def id(self) -> MessageId:
@@ -129,9 +129,9 @@ class GossipsubMessage:
 
         # The internal computation returns the raw bytes...
         computed_id_bytes = self._compute_raw_id(domain, data_for_hash)
-        
+
         # We then cast to our strict NewType before caching and returning.
-        self._id = _MessageId(computed_id_bytes)
+        self._id = MessageId(computed_id_bytes)
         return self._id
 
     def _compute_raw_id(self, domain: bytes, message_data: bytes) -> bytes:
