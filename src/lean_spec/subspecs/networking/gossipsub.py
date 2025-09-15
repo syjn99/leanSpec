@@ -60,7 +60,10 @@ class GossipsubParameters(StrictBaseModel):
     """
 
 
-MessageId = bytes
+_MessageId = NewType("MessageId", bytes)
+"""Static analysis to prevent accidental misuse of generic bytes."""
+
+MessageId = Annotated[_MessageId, Field(min_length=20, max_length=20)]
 """A 20-byte ID for gossipsub messages."""
 
 
