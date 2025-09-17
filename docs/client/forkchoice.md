@@ -1,6 +1,7 @@
+# Fork Choice
+
 <!-- mdformat-toc start --slug=github --no-anchors --maxlevel=6 --minlevel=2 -->
 
-- [Introduction](#introduction)
 - [Fork choice](#fork-choice)
   - [Configuration](#configuration)
   - [Helpers](#helpers)
@@ -20,8 +21,6 @@
     - [`on_block`](#on_block)
 
 <!-- mdformat-toc end -->
-
-## Introduction
 
 ## Fork choice
 
@@ -43,15 +42,14 @@ update `store` by running:
 #### `get_fork_choice_head`
 
 ```python
-# Use LMD GHOST to get the head, given a particular root (usually the latest 
+# Use LMD GHOST to get the head, given a particular root (usually the latest
 # known justified block)
 #
-# Note: 3sf mini divergence: it directly accepts latest_votes (known or new) as 
+# Note: 3sf mini divergence: it directly accepts latest_votes (known or new) as
 # tracked in the store
-def get_fork_choice_head(blocks: Dict[str, Block],
-                         root: str,
-                         latest_votes: List[Checkpoint],
-                         min_score: int = 0) -> str:
+def get_fork_choice_head(
+    blocks: Dict[str, Block], root: str, latest_votes: List[Checkpoint], min_score: int = 0
+) -> str:
     # Start at genesis by default
     if root == ZERO_HASH:
         root = min(blocks.keys(), key=lambda block: blocks[block].slot)
@@ -80,20 +78,15 @@ def get_fork_choice_head(blocks: Dict[str, Block],
         children = children_map.get(current, [])
         if not children:
             return current
-        current = max(children,
-                      key=lambda x: (vote_weights.get(x, 0), blocks[x].slot, x))
+        current = max(children, key=lambda x: (vote_weights.get(x, 0), blocks[x].slot, x))
 ```
 
 #### `get_latest_justified`
 
 ```python
-
 def get_latest_justified(states: Dict[str, State]) -> Optional[Checkpoint]:
     # Find the State object with the maximum s.latest_justified.slot value
-    latest = max(
-        states.values(),
-        key=lambda s: s.latest_justified.slot
-    )
+    latest = max(states.values(), key=lambda s: s.latest_justified.slot)
 
     # Return the Checkpoint from that State object
     return latest.latest_justified
@@ -112,10 +105,10 @@ algorithm. The important fields being tracked are described below:
 ```python
 class Store(object):
     # time in intervals since genesis
-    time: Interval,
+    time: Interval
     config: Config
-    head: Root,
-    safe_target: Root,
+    head: Root
+    safe_target: Root
     latest_justified: Checkpoint
     latest_finalized: Checkpoint
     blocks: Dict[Root, Block] = field(default_factory=dict)
@@ -156,9 +149,8 @@ def update_head(store: Store) -> None:
     """
     store.latest_justified = get_latest_justified(store.states)
     store.head = get_fork_choice_head(
-        store.blocks,
-        store.latest_justified.root,
-        store.latest_known_votes)
+        store.blocks, store.latest_justified.root, store.latest_known_votes
+    )
 
     store.latest_finalized = store.states[store.head].latest_finalized
 ```
@@ -167,16 +159,16 @@ def update_head(store: Store) -> None:
 
 ```python
 # Compute the latest block that the validator is allowed to choose as the target
-    def update_safe_target(store: Store):
-        # 2/3rd majority min voting voting weight for target selection
-        min_target_score = -(-store.config.num_validators * 2 // 3) # ceiling division
+def update_safe_target(store: Store):
+    # 2/3rd majority min voting voting weight for target selection
+    min_target_score = -(-store.config.num_validators * 2 // 3)  # ceiling division
 
-        store.safe_target = get_fork_choice_head(
-            store.blocks,
-            store.latest_justified.root,
-            store.latest_new_votes,
-            min_score=min_target_score,
-        )
+    store.safe_target = get_fork_choice_head(
+        store.blocks,
+        store.latest_justified.root,
+        store.latest_new_votes,
+        min_score=min_target_score,
+    )
 ```
 
 ##### `get_vote_target`
@@ -198,14 +190,13 @@ def get_vote_target(store: Store) -> Checkpoint:
 
     # If the latest finalized slot is very far back, then only some slots are
     # valid to justify, make sure the target is one of those
-    while not is_justifiable_slot(store.latest_finalized.slot, store.blocks[target_block_root].slot):
+    while not is_justifiable_slot(
+        store.latest_finalized.slot, store.blocks[target_block_root].slot
+    ):
         target_block_root = store.blocks[target_block_root].parent_root
 
     target_block = store.blocks[target_block_root]
-    return Checkpoint(
-        root=hash_tree_root(target_block),
-        slot=target_block.slot
-    )
+    return Checkpoint(root=hash_tree_root(target_block), slot=target_block.slot)
 ```
 
 #### `accept_new_votes`
@@ -294,7 +285,7 @@ def on_attestation(store: Store, signed_vote: SignedVote, is_from_block: bool = 
     latest votes.
     """
     validate_on_attestation(store, signed_vote)
-    
+
     validator_id = signed_vote.validator_id
     vote = signed_vote.message
 
@@ -344,8 +335,8 @@ def on_block(store: Store, block: Block) -> None:
 
     # add block votes to the onchain known last votes
     for signed_vote in block.body.attestations:
-      # Add block votes to the onchain known last votes
-      on_attestation(store, signed_vote, True)
+        # Add block votes to the onchain known last votes
+        on_attestation(store, signed_vote, True)
 
     update_head(store)
 ```

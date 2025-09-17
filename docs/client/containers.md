@@ -1,3 +1,5 @@
+# Containers
+
 <!-- mdformat-toc start --slug=github --no-anchors --maxlevel=6 --minlevel=2 -->
 
 - [Encoding](#encoding)
@@ -15,8 +17,6 @@
 
 <!-- mdformat-toc end -->
 
-# Containers
-
 ## Encoding
 
 The containers for various blockchain consensus objects are primarily SSZ objects. To be more prover friendly, the Poseidon2 hasher will be used for hash tree rooting of these objects. However `devnet0` & `devnet1` continue to use the sha256 hasher.
@@ -25,7 +25,7 @@ The containers for various blockchain consensus objects are primarily SSZ object
 
 ```python
 class Config(Container):
-    // temporary property to support simplified round robin block production in absence of randao & deposit mechanisms
+    # temporary property to support simplified round robin block production in absence of randao & deposit mechanisms
     num_validators: uint64
     genesis_time: uint64
 ```
@@ -55,9 +55,7 @@ class State(Container):
     # Diverged from 3SF-mini.py:
     # Flattened `justifications: Dict[str, List[bool]]` for SSZ compatibility
     justifications_roots: List[Bytes32, HISTORICAL_ROOTS_LIMIT]
-    justifications_validators: Bitlist[
-        HISTORICAL_ROOTS_LIMIT * VALIDATOR_REGISTRY_LIMIT
-    ]
+    justifications_validators: Bitlist[HISTORICAL_ROOTS_LIMIT * VALIDATOR_REGISTRY_LIMIT]
 ```
 
 ## `Block`
@@ -65,7 +63,7 @@ class State(Container):
 ```python
 class Block(Container):
     slot: uint64
-    proposer_index: uin64
+    proposer_index: uint64
     parent_root: Bytes32
     state_root: Bytes32
     body: BlockBody
@@ -95,8 +93,8 @@ Remark: `SignedVote` will be replaced by aggregated attestations.
 
 ```python
 class SignedBlock(Container):
-    message: Block,
-    signature: Vector[byte, 4000],
+    message: Block
+    signature: Vector[byte, 4000]
 ```
 
 ## `Vote`
@@ -115,10 +113,10 @@ class Vote(Container):
 
 ```python
 class SignedVote(Container):
-    validator_id: uint64,
-    message: Vote,
+    validator_id: uint64
+    message: Vote
     # signature over vote message only as it would be aggregated later in attestation
-    signature: Vector[byte, 4000],
+    signature: Vector[byte, 4000]
 ```
 
 #### `Attestation`
@@ -129,7 +127,7 @@ The votes are aggregated in `Attestation` similar to beacon protocol but without
 class Attestation(Container):
     aggregation_bits: Bitlist[VALIDATOR_REGISTRY_LIMIT]
     message: Vote
-    # this is an aggregated zk proof and is not a fix size signature 
+    # this is an aggregated zk proof and is not a fix size signature
     signature: List[byte, 4000]
 ```
 

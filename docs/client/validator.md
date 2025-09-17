@@ -1,3 +1,5 @@
+# Honest Validator
+
 <!-- mdformat-toc start --slug=github --no-anchors --maxlevel=6 --minlevel=2 -->
 
 - [Validator identification](#validator-identification)
@@ -10,8 +12,6 @@
 - [Remarks](#remarks)
 
 <!-- mdformat-toc end -->
-
-# Validator
 
 ## Validator identification
 
@@ -46,37 +46,33 @@ The validator constructs, signs a `Block` message and further broadcasts the `Si
 
 ```python
 def produce_block(store: Store, slot: Slot) -> Block:
-  head_root = get_proposal_head(store)
-  head_state = store.states[head_root]
+    head_root = get_proposal_head(store)
+    head_state = store.states[head_root]
 
-  new_block, state = None, None
-  votes_to_add = []
+    new_block, state = None, None
+    votes_to_add = []
 
-  # Keep attempt to add valid votes from the list of available votes
-  while 1:
-      new_block = Block(
-          slot=new_slot,
-          parent=store.head,
-          votes=votes_to_add
-      )
-      state = process_block(head_state, new_block)
-      new_votes_to_add = [
-          vote for vote in store.latest_known_votes if
-          vote.source == state.latest_justified and
-          vote not in votes_to_add
-      ]
+    # Keep attempt to add valid votes from the list of available votes
+    while 1:
+        new_block = Block(slot=new_slot, parent=store.head, votes=votes_to_add)
+        state = process_block(head_state, new_block)
+        new_votes_to_add = [
+            vote
+            for vote in store.latest_known_votes
+            if vote.source == state.latest_justified and vote not in votes_to_add
+        ]
 
-      if len(new_votes_to_add) == 0:
-          break
-      votes_to_add.extend(new_votes_to_add)
+        if len(new_votes_to_add) == 0:
+            break
+        votes_to_add.extend(new_votes_to_add)
 
-  new_block.state_root = compute_hash(state)
-  new_hash = compute_hash(new_block)
+    new_block.state_root = compute_hash(state)
+    new_hash = compute_hash(new_block)
 
-  store.blocks[new_hash] = new_block
-  store.states[new_hash] = state
+    store.blocks[new_hash] = new_block
+    store.states[new_hash] = state
 
-  return new_block
+    return new_block
 ```
 
 ## Attesting
@@ -102,7 +98,6 @@ def produce_attestation_vote(store: Store, slot: Slot) -> Vote:
     """
     head = get_proposal_head(store, slot)
     target = get_vote_target(store)
-
 
     return Vote(
         slot=slot,

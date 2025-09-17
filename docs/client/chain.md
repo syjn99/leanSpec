@@ -117,7 +117,9 @@ def set_justifications(state: State, justifications: Dict[str, List[bool]]) -> N
         flattened_justifications.extend(justifications[root])
 
     # Create a new Bitlist with all the flattened votes
-    justifications_validators = Bitlist[HISTORICAL_ROOTS_LIMIT * VALIDATOR_REGISTRY_LIMIT](*flattened_justifications)
+    justifications_validators = Bitlist[HISTORICAL_ROOTS_LIMIT * VALIDATOR_REGISTRY_LIMIT](
+        *flattened_justifications
+    )
 
     state.justifications_roots = justifications_roots
     state.justifications_validators = justifications_validators
@@ -133,8 +135,8 @@ def is_justifiable_slot(finalized_slot: int, candidate: int):
     delta = candidate - finalized_slot
     return (
         delta <= 5
-        or (delta ** 0.5) % 1 == 0            # any x^2
-        or ((delta + 0.25) ** 0.5) % 1 == 0.5 # any x^2+x
+        or (delta**0.5) % 1 == 0  # any x^2
+        or ((delta + 0.25) ** 0.5) % 1 == 0.5  # any x^2+x
     )
 ```
 
@@ -153,16 +155,15 @@ Even though `Devnet0` has no individual validators tracking, there would also be
 
 ```python
 def generate_genesis_state(genesis_time: uint64, num_validators: uint64) -> State:
-  state = State(
-    config=Config(
-      genesis_time=genesis_time,
-      num_validators=num_validators,
-    ),
-    latest_block_header=BlockHeader(body_root=hash_tree_root(BlockBody())),
-  )
+    state = State(
+        config=Config(
+            genesis_time=genesis_time,
+            num_validators=num_validators,
+        ),
+        latest_block_header=BlockHeader(body_root=hash_tree_root(BlockBody())),
+    )
 
-  return state;
-}
+    return state
 ```
 
 ### Genesis block

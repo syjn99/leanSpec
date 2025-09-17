@@ -21,8 +21,8 @@ format for the time being and are subject to change.
 ## Design Principles
 
 1. **Clarity over Performance**: Readable reference implementations
-2. **Strong Typing**: Pydantic models with full validation
-3. **Test Coverage**: Extensive tests for all modules
+1. **Strong Typing**: Pydantic models with full validation
+1. **Test Coverage**: Extensive tests for all modules
 
 ## Development
 

@@ -1,3 +1,5 @@
+# Networking
+
 <!-- mdformat-toc start --slug=github --no-anchors --maxlevel=6 --minlevel=2 -->
 
 - [Setup](#setup)
@@ -59,8 +61,8 @@ This section outlines configurations that are used in this spec.
 | Name                            | Value                      | Description                                                                |
 | ------------------------------- | -------------------------- | -------------------------------------------------------------------------- |
 | `MAX_REQUEST_BLOCKS`            | `2**10` (= 1024)           | Maximum number of blocks in a single request                               |
-| `MESSAGE_DOMAIN_INVALID_SNAPPY` | `DomainType('0x00000000')` | 4-byte domain for gossip message-id isolation of *invalid* snappy messages |
-| `MESSAGE_DOMAIN_VALID_SNAPPY`   | `DomainType('0x01000000')` | 4-byte domain for gossip message-id isolation of *valid* snappy messages   |
+| `MESSAGE_DOMAIN_INVALID_SNAPPY` | `DomainType('0x00000000')` | 4-byte domain for gossip message-id isolation of _invalid_ snappy messages |
+| `MESSAGE_DOMAIN_VALID_SNAPPY`   | `DomainType('0x01000000')` | 4-byte domain for gossip message-id isolation of _valid_ snappy messages   |
 
 ## Gossip domain
 
@@ -83,7 +85,7 @@ will be used:
   responses): 6
 - `mcache_gossip` (number of windows to gossip about): 3
 - `seen_ttl` (expiry time for cache of seen message ids, seconds):
-  SECONDS_PER_SLOT * SLOTS_PER_EPOCH * 2
+  `SECONDS_PER_SLOT * SLOTS_PER_EPOCH * 2`
 
 #### Topics and messages
 
@@ -199,7 +201,7 @@ Once the handshake completes, the client with the lower `finalized_epoch` or
 `head_slot` (if the clients have equal `finalized_epoch`s) SHOULD request blocks
 from its counterparty via the `BlocksByRoot` request.
 
-*Note*: Under abnormal network condition or after some rounds of
+_Note_: Under abnormal network condition or after some rounds of
 `BlocksByRoot` requests, the client might need to send `Status` request
 again to learn if the peer has a higher head. Implementers are free to implement
 such behavior in their own way.
