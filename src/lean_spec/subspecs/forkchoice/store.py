@@ -168,7 +168,7 @@ class Store(Container):
         """
         Process new attestation (signed validator attestation).
 
-        Handles attestations from blocks or network gossip, updating vote tracking
+        Handles attestations from blocks or network gossip, updating attestation tracking
         according to timing and precedence rules.
 
         Args:
@@ -185,12 +185,12 @@ class Store(Container):
         if is_from_block:
             # On-chain attestation processing
 
-            # Update known votes if this is the latest from validator
+            # Update known attestations if this is the latest from validator
             latest_known = self.latest_known_attestations.get(validator_id)
             if latest_known is None or latest_known.message.data.slot < attestation_slot:
                 self.latest_known_attestations[validator_id] = signed_attestation
 
-            # Remove from new votes if this supersedes it
+            # Remove from new attestations if this supersedes it
             latest_new = self.latest_new_attestations.get(validator_id)
             if latest_new is not None and latest_new.message.data.slot <= attestation_slot:
                 del self.latest_new_attestations[validator_id]
@@ -201,7 +201,7 @@ class Store(Container):
             time_slots = self.time // INTERVALS_PER_SLOT
             assert attestation_slot <= time_slots, "Attestation from future slot"
 
-            # Update new votes if this is latest from validator
+            # Update new attestations if this is latest from validator
             latest_new = self.latest_new_attestations.get(validator_id)
             if latest_new is None or latest_new.message.data.slot < attestation_slot:
                 self.latest_new_attestations[validator_id] = signed_attestation
@@ -256,13 +256,13 @@ class Store(Container):
         self.blocks[block_hash] = block
         self.states[block_hash] = state
 
-        # Process block's attestations as on-chain votes
+        # Process block's attestations as on-chain attestations
         for index, attestation in enumerate(block.body.attestations):
             signature = signatures[index]
             signed_attestation = SignedAttestation(
                 message=attestation,
                 # eventually one would be able to associate and consume an
-                # aggregated signature for individual vote validity with that
+                # aggregated signature for individual attestation validity with that
                 # information encoded in the signature
                 signature=signature,
             )
@@ -272,8 +272,8 @@ class Store(Container):
         self.update_head()
 
         proposer_signature = signatures[len(block.body.attestations)]
-        # the proposer vote for the current slot and block as head is to be
-        # treated as the vote is independently casted in the second interval
+        # the proposer attestation for the current slot and block as head is to be
+        # treated as the attestation is independently casted in the second interval
         signed_proposer_attestation = SignedAttestation(
             message=proposer_attestation,
             signature=proposer_signature,
@@ -282,12 +282,12 @@ class Store(Container):
         # block, but to treated as casted independently after the proposal in the next
         # interval and to be hopefully included in some future block (most likely next)
         #
-        # Hence make sure this gets added to the new votes so that this doesn't influence
-        # this node's validators upcoming votes
+        # Hence make sure this gets added to the new attestations so that this doesn't influence
+        # this node's validators upcoming attestations
         self.process_attestation(signed_proposer_attestation, is_from_block=False)
 
     def update_head(self) -> None:
-        """Update store's head based on latest justified checkpoint and votes."""
+        """Update store's head based on latest justified checkpoint and attestations."""
         # Get latest justified checkpoint
         latest_justified = get_latest_justified(self.states)
         if latest_justified:
@@ -330,10 +330,10 @@ class Store(Container):
         Advance store time by one interval and perform interval-specific actions.
 
         Different actions are performed based on interval within slot:
-        - Interval 0: Process votes if proposal exists
+        - Interval 0: Process attestations if proposal exists
         - Interval 1: Validator voting period (no action)
         - Interval 2: Update safe target
-        - Interval 3: Process votes
+        - Interval 3: Process accumulated attestations
 
         Args:
             has_proposal: Whether a proposal exists for this interval.
@@ -342,17 +342,17 @@ class Store(Container):
         current_interval = self.time % INTERVALS_PER_SLOT
 
         if current_interval == Uint64(0):
-            # Start of slot - process votes if proposal exists
+            # Start of slot - process attestations if proposal exists
             if has_proposal:
                 self.accept_new_attestations()
         elif current_interval == Uint64(1):
             # Validator voting interval - no action
             pass
         elif current_interval == Uint64(2):
-            # Update safe target for next votes
+            # Update safe target for next attestations
             self.update_safe_target()
         else:
-            # End of slot - process accumulated votes
+            # End of slot - process accumulated attestations
             self.accept_new_attestations()
 
     def accept_new_attestations(self) -> None:
@@ -372,9 +372,9 @@ class Store(Container):
 
     def update_safe_target(self) -> None:
         """
-        Update the safe target for attestation votes.
+        Update the safe target for attestations.
 
-        Computes target that has sufficient (2/3+ majority) vote support.
+        Computes target that has sufficient (2/3+ majority) attestation support.
         """
         # Get validator count from head state
         head_state = self.states[self.head]
@@ -383,7 +383,7 @@ class Store(Container):
         # Calculate 2/3 majority threshold (ceiling division)
         min_target_score = -(-num_validators * 2 // 3)
 
-        # Find head with minimum vote threshold
+        # Find head with minimum attestation threshold
         safe_target = get_fork_choice_head(
             self.blocks,
             self.latest_justified.root,
@@ -396,7 +396,7 @@ class Store(Container):
         """
         Get the head for block proposal at given slot.
 
-        Ensures store is up-to-date and processes any pending votes.
+        Ensures store is up-to-date and processes any pending attestations.
 
         Args:
             slot: Slot for which to get proposal head.
@@ -409,7 +409,7 @@ class Store(Container):
         # Tick store to current time (no-op if already current)
         self.advance_time(slot_time, True)
 
-        # Process any pending votes (no-op if already processed)
+        # Process any pending attestations (no-op if already processed)
         self.accept_new_attestations()
 
         return self.head
