@@ -146,7 +146,7 @@ class TestIntervalTicking:
         initial_time = Uint64(0)
         object.__setattr__(sample_store, "time", initial_time)
 
-        # Add some test votes for processing
+        # Add some test attestations for processing
         test_checkpoint = Checkpoint(root=Bytes32(b"test" + b"\x00" * 28), slot=Slot(1))
         sample_store.latest_new_attestations[ValidatorIndex(0)] = build_signed_attestation(
             ValidatorIndex(0),
@@ -227,31 +227,31 @@ class TestSlotTimeCalculations:
         assert boundary_interval == Uint64(0)  # First interval of slot
 
 
-class TestVoteProcessingTiming:
-    """Test timing of vote processing."""
+class TestAttestationProcessingTiming:
+    """Test timing of attestation processing."""
 
-    def test_accept_new_votes_basic(self, sample_store: Store) -> None:
-        """Test basic new vote processing."""
-        # Add some new votes
+    def test_accept_new_attestations_basic(self, sample_store: Store) -> None:
+        """Test basic new attestation processing."""
+        # Add some new attestations
         checkpoint = Checkpoint(root=Bytes32(b"test" + b"\x00" * 28), slot=Slot(1))
         sample_store.latest_new_attestations[ValidatorIndex(0)] = build_signed_attestation(
             ValidatorIndex(0),
             checkpoint,
         )
 
-        initial_new_votes = len(sample_store.latest_new_attestations)
-        initial_known_votes = len(sample_store.latest_known_attestations)
+        initial_new_attestations = len(sample_store.latest_new_attestations)
+        initial_known_attestations = len(sample_store.latest_known_attestations)
 
-        # Accept new votes
+        # Accept new attestations
         sample_store.accept_new_attestations()
 
-        # New votes should move to known votes
+        # New attestations should move to known attestations
         assert len(sample_store.latest_new_attestations) == 0
-        assert len(sample_store.latest_known_attestations) == initial_known_votes + initial_new_votes
+        assert len(sample_store.latest_known_attestations) == initial_known_attestations + initial_new_attestations
 
-    def test_accept_new_votes_multiple(self, sample_store: Store) -> None:
-        """Test accepting multiple new votes."""
-        # Add multiple new votes
+    def test_accept_new_attestations_multiple(self, sample_store: Store) -> None:
+        """Test accepting multiple new attestations."""
+        # Add multiple new attestations
         checkpoints = [
             Checkpoint(
                 root=Bytes32(f"test{i}".encode() + b"\x00" * (32 - len(f"test{i}"))),
@@ -266,10 +266,10 @@ class TestVoteProcessingTiming:
                 checkpoint,
             )
 
-        # Accept all new votes
+        # Accept all new attestations
         sample_store.accept_new_attestations()
 
-        # All should move to known votes
+        # All should move to known attestations
         assert len(sample_store.latest_new_attestations) == 0
         assert len(sample_store.latest_known_attestations) == 5
 
@@ -278,16 +278,16 @@ class TestVoteProcessingTiming:
             stored = sample_store.latest_known_attestations[ValidatorIndex(i)]
             assert stored.message.data.target == checkpoint
 
-    def test_accept_new_votes_empty(self, sample_store: Store) -> None:
-        """Test accepting new votes when there are none."""
-        initial_known_votes = len(sample_store.latest_known_attestations)
+    def test_accept_new_attestations_empty(self, sample_store: Store) -> None:
+        """Test accepting new attestations when there are none."""
+        initial_known_attestations = len(sample_store.latest_known_attestations)
 
-        # Accept votes when there are no new votes
+        # Accept attestations when there are no new attestations
         sample_store.accept_new_attestations()
 
         # Should be no-op
         assert len(sample_store.latest_new_attestations) == 0
-        assert len(sample_store.latest_known_attestations) == initial_known_votes
+        assert len(sample_store.latest_known_attestations) == initial_known_attestations
 
 
 class TestProposalHeadTiming:
@@ -327,19 +327,19 @@ class TestProposalHeadTiming:
         # This is mainly testing that the call doesn't fail
         assert sample_store.time >= initial_time
 
-    def test_get_proposal_head_processes_votes(self, sample_store: Store) -> None:
-        """Test that get_proposal_head processes pending votes."""
-        # Add some new votes
-        checkpoint = Checkpoint(root=Bytes32(b"vote" + b"\x00" * 28), slot=Slot(1))
+    def test_get_proposal_head_processes_attestations(self, sample_store: Store) -> None:
+        """Test that get_proposal_head processes pending attestations."""
+        # Add some new attestations
+        checkpoint = Checkpoint(root=Bytes32(b"attestation" + b"\x00" * 21), slot=Slot(1))
         sample_store.latest_new_attestations[ValidatorIndex(10)] = build_signed_attestation(
             ValidatorIndex(10),
             checkpoint,
         )
 
-        # Get proposal head should process votes
+        # Get proposal head should process attestations
         sample_store.get_proposal_head(Slot(1))
 
-        # Votes should have been processed (moved to known votes)
+        # Attestations should have been processed (moved to known attestations)
         assert ValidatorIndex(10) not in sample_store.latest_new_attestations
         assert ValidatorIndex(10) in sample_store.latest_known_attestations
         stored = sample_store.latest_known_attestations[ValidatorIndex(10)]
