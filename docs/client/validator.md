@@ -29,17 +29,17 @@ This is deterministic. Everyone can compute who should propose at any slot.
 Proposers create blocks at the start of the slot. Specifically, in the first
 interval of the slot's four intervals.
 
-Early proposal gives other validators time to see and vote on the block.
+Early proposal gives other validators time to see and create an attestation on the block.
 
 ### Building a Block
 
 The proposer queries fork choice for the current head. This is the parent for
 the new block.
 
-The proposer collects recent votes. Valid votes get included in the block.
-A vote is valid if its source matches the current justified checkpoint.
+The proposer collects recent attestations. Valid attestations get included in the block.
+An attestation is valid if its source matches the current justified checkpoint.
 
-The proposer keeps adding votes until no more valid votes remain. This
+The proposer keeps adding attestations until no more valid attestations remain. This
 maximizes block utility.
 
 After building the block, the proposer computes the state root. This is the
@@ -50,14 +50,14 @@ state hash after applying the block.
 The proposer signs the block and broadcasts it to the network. Other validators
 receive and validate it.
 
-## Voting
+## Attesting
 
-Every validator votes in every slot. Voting happens in the second interval,
+Every validator attestations in every slot. Attesting happens in the second interval,
 after proposals are made.
 
-### What to Vote For
+### What to Attest For
 
-Validators vote for three things:
+Validators express their own views with an attestation, especially for three things:
 
 - The chain head
 - A target to justify
@@ -67,41 +67,41 @@ The head is what fork choice says is canonical. The target is computed based on
 safe blocks and justifiability rules. The source is the most recent justified
 checkpoint.
 
-### Why Vote
+### Why Attest
 
-Votes drive justification and finalization. When 2/3 of validators vote for the
+Attestations drive justification and finalization. When 2/3 of validators attestation for the
 same target, it becomes justified. Justification eventually leads to
 finalization.
 
-Votes also inform fork choice. Other validators see these votes and use them to
+Attestations also inform fork choice. Other validators see these attestations and use them to
 compute the head.
 
-### Broadcasting Votes
+### Broadcasting Attestations
 
-Validators sign their votes and broadcast them. The network uses a single topic
-for all votes. No subnets or committees in the current design.
+Validators sign their attestations and broadcast them. The network uses a single topic
+for all attestations. No subnets or committees in the current design.
 
 ## Timing
 
 The slot divides into four one-second intervals:
 
 - Interval 0: Proposals happen
-- Interval 1: Votes happen
+- Interval 1: Attestations happen
 - Interval 2: Safe targets update
 - Interval 3: More processing
 
 This rhythm keeps the network synchronized. Validators know when to expect
-blocks and votes.
+blocks and attestations.
 
 ## Aggregation
 
-Vote aggregation combines multiple votes into one. This saves bandwidth and
+Attestation aggregation combines multiple attestations into one. This saves bandwidth and
 block space.
 
-Devnet 0 has no aggregation. Each vote is separate. Future devnets will add
+Devnet 0 has no aggregation. Each attestation is separate. Future devnets will add
 aggregation.
 
-When aggregation is added, aggregators will collect votes and combine them.
+When aggregation is added, aggregators will collect attestations and combine them.
 Aggregated attestations will be broadcast separately.
 
 ## Signature Handling

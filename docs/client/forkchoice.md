@@ -18,9 +18,9 @@ consensus.
 ## How It Works
 
 The fork choice algorithm starts from the most recently justified block. It
-then follows validator votes forward through the tree of blocks.
+then follows validator attestations forward through the tree of blocks.
 
-At each branch point, the algorithm picks the child with the most votes. Votes
+At each branch point, the algorithm picks the child with the most attestations. Attestation
 for descendants count toward ancestors. This means voting for a block implicitly
 supports its entire history.
 
@@ -32,16 +32,16 @@ Only justified blocks can serve as fork choice starting points. This ties fork
 choice to finalization.
 
 Validators must justify new blocks before fork choice considers them. This
-creates a feedback loop: votes justify blocks, justified blocks anchor fork
+creates a feedback loop: attestations justify blocks, justified blocks anchor fork
 choice, fork choice determines what to build on.
 
-## Vote Timing
+## Attestation Timing
 
-Votes aren't processed immediately. The protocol divides each slot into
+Attestations aren't processed immediately. The protocol divides each slot into
 intervals. Different intervals have different roles:
 
-- Some intervals accept new votes
-- Some intervals update what's safe to vote for
+- Some intervals accept new attestations
+- Some intervals update what's safe to attestation for
 - Some intervals are for proposal
 
 This careful timing prevents certain attacks and ensures validators have
@@ -49,15 +49,15 @@ consistent views.
 
 ## Safe Targets
 
-Validators need to know where they can safely vote. The safe target mechanism
+Validators need to know where they can safely submit an attestation. The safe target mechanism
 finds the latest block that has enough support.
 
-A block needs votes from 2/3 of validators to be safe. This threshold ensures
+A block needs attestations from 2/3 of validators to be safe. This threshold ensures
 that conflicting blocks can't both be safe simultaneously.
 
-## Computing Vote Targets
+## Computing Attestation Targets
 
-When a validator votes, it must choose a target carefully. The target should be
+When a validator creates an attestation, it must choose a target carefully. The target should be
 recent but not too recent. It should be safe but not too old.
 
 The algorithm starts from the current head and works backward. It moves back a
@@ -66,10 +66,10 @@ justified according to protocol rules.
 
 ## Handling New Information
 
-Fork choice must handle new blocks and new votes. When a block arrives, it gets
-added to the tree. Its votes are extracted and counted.
+Fork choice must handle new blocks and new attestations. When a block arrives, it gets
+added to the tree. Its attestations are extracted and counted.
 
-When a vote arrives over gossip, it's held temporarily. Votes are only counted
+When an attestation arrives over gossip, it's held temporarily. Attestations are only counted
 at specific times to maintain consistency.
 
 ## Genesis Initialization
@@ -82,7 +82,7 @@ slot.
 
 ## Reorganizations
 
-Sometimes fork choice changes. A new vote might tip the balance to a different
+Sometimes fork choice changes. A new attestation might tip the balance to a different
 fork. The head switches to the new fork.
 
 Reorganizations are normal in the protocol. Shallow reorgs happen occasionally.
@@ -91,7 +91,7 @@ Deep reorgs past finalization cannot happen if 2/3 of validators are honest.
 ## View Consistency
 
 Different validators may have different views temporarily. They might see
-blocks in different orders. They might receive votes at different times.
+blocks in different orders. They might receive attestations at different times.
 
 Fork choice rules ensure these differences don't break consensus. Eventually,
 all honest validators converge on the same head.
@@ -108,6 +108,6 @@ lost are discarded.
 ## Implementation Details
 
 The specification code implements these concepts precisely. It maintains the
-tree of blocks, tracks votes, and computes the head.
+tree of blocks, tracks attestations, and computes the head.
 
 This documentation explains the concepts. The code provides the exact algorithm.

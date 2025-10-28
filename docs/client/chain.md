@@ -26,7 +26,7 @@ exist.
 ### Consensus Without Epochs
 
 Traditional beacon chain organizes time into epochs. Lean chain removes this.
-All validators vote in every slot. This simplifies the protocol significantly.
+All validators are expected to create, sign, and broadcast an attesation in every slot. This simplifies the protocol significantly.
 
 ### Signature Handling
 
@@ -37,9 +37,9 @@ are ready.
 Real signatures will be large, around 3-4 kilobytes each. Devnet 1 will test
 these.
 
-### Vote Processing
+### Attestation Processing
 
-Votes are collected and included in blocks without aggregation. Each vote is
+Attestations are collected and included in blocks without aggregation. Each attestation is
 separate. This is simpler than beacon chain aggregation.
 
 Later devnets will add aggregation to reduce bandwidth.
@@ -74,7 +74,7 @@ configuration.
 
 ## Chain Justification
 
-Blocks become justified when enough validators vote for them. Justification
+Blocks become justified when enough validators attestation for them. Justification
 happens when 2/3 of validators agree.
 
 Not every slot can be justified. Certain slots are special based on how far
@@ -85,7 +85,7 @@ justification from spreading too thin.
 ## Chain Finalization
 
 Finalization provides stronger guarantees than justification. A block is
-finalized when validators vote for it and there are no other justifiable
+finalized when validators attestation for it and there are no other justifiable
 positions between it and what they're voting for.
 
 Finalized blocks cannot be reverted. This provides economic certainty.
@@ -123,11 +123,11 @@ Blocks must pass several checks:
 - Proposer is correct for this slot
 - Parent reference is valid
 
-After these checks, the block is processed. Vote processing happens next.
+After these checks, the block is processed. Attestation processing happens next.
 
-## Vote Validation
+## Attestation Validation
 
-Each vote must meet requirements:
+Each attestation must meet requirements:
 
 - Source must be justified
 - Target must not already be justified
@@ -135,7 +135,7 @@ Each vote must meet requirements:
 - Slot relationships must make sense
 - Target must be in a justifiable position
 
-Invalid votes are ignored. Valid votes are counted. When enough votes
+Invalid attestations are ignored. Valid attestations are counted. When enough attestations
 accumulate, justification happens.
 
 ## Justification Tracking
