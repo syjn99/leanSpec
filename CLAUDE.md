@@ -115,7 +115,7 @@ When creating SSZ types, follow these established patterns:
 ### Domain-Specific Types (Preferred)
 - Use meaningful names that describe the purpose: `JustificationValidators`, `HistoricalBlockHashes`, `Attestations`
 - Define domain-specific types in modular structure (see Architecture section below)
-- Avoid generic names with numbers like `Bitlist68719476736` or `SignedVoteList4096`
+- Avoid generic names with numbers like `Bitlist68719476736` or `SignedAttestationList4096`
 
 ### SSZType vs SSZModel Design Decision
 
@@ -168,8 +168,8 @@ class JustificationValidators(BaseBitlist):
 
 # In block/types.py
 class Attestations(SSZList):
-    """List of signed votes (attestations) included in a block."""
-    ELEMENT_TYPE = SignedVote
+    """List of signed attestations included in a block."""
+    ELEMENT_TYPE = SignedAttestation
     LIMIT = 4096  # VALIDATOR_REGISTRY_LIMIT
 ```
 
@@ -177,7 +177,7 @@ class Attestations(SSZList):
 ```python
 # Don't do this:
 class Bitlist68719476736(BaseBitlist): ...
-class SignedVoteList4096(SSZList): ...
+class SignedAttestationList4096(SSZList): ...
 ```
 
 ### API Compatibility
