@@ -322,8 +322,8 @@ class TestAttestationProcessing:
         sample_store.process_attestation(signed_attestation, is_from_block=False)
 
         # Vote should be added to new votes
-        assert ValidatorIndex(5) in sample_store.latest_new_votes
-        stored = sample_store.latest_new_votes[ValidatorIndex(5)]
+        assert ValidatorIndex(5) in sample_store.latest_new_attestations
+        stored = sample_store.latest_new_attestations[ValidatorIndex(5)]
         assert stored.message.data.target == signed_attestation.message.data.target
 
     def test_process_block_attestation(self, sample_store: Store) -> None:
@@ -364,8 +364,8 @@ class TestAttestationProcessing:
         sample_store.process_attestation(signed_attestation, is_from_block=True)
 
         # Vote should be added to known votes
-        assert ValidatorIndex(7) in sample_store.latest_known_votes
-        stored = sample_store.latest_known_votes[ValidatorIndex(7)]
+        assert ValidatorIndex(7) in sample_store.latest_known_attestations
+        stored = sample_store.latest_known_attestations[ValidatorIndex(7)]
         assert stored.message.data.target == signed_attestation.message.data.target
 
     def test_process_attestation_superseding(self, sample_store: Store) -> None:
@@ -416,8 +416,8 @@ class TestAttestationProcessing:
         sample_store.process_attestation(signed_attestation_2, is_from_block=False)
 
         # Should have the newer vote
-        assert validator in sample_store.latest_new_votes
-        stored = sample_store.latest_new_votes[validator]
+        assert validator in sample_store.latest_new_attestations
+        stored = sample_store.latest_new_attestations[validator]
         assert stored.message.data.target == signed_attestation_2.message.data.target
 
     def test_process_attestation_from_block_supersedes_new(self, sample_store: Store) -> None:
@@ -458,15 +458,15 @@ class TestAttestationProcessing:
         sample_store.process_attestation(signed_attestation, is_from_block=False)
 
         # Should be in new votes
-        assert validator in sample_store.latest_new_votes
+        assert validator in sample_store.latest_new_attestations
 
         # Process same vote as block attestation
         sample_store.process_attestation(signed_attestation, is_from_block=True)
 
         # Vote should move to known votes and be removed from new votes
-        assert validator in sample_store.latest_known_votes
-        assert validator not in sample_store.latest_new_votes
-        stored = sample_store.latest_known_votes[validator]
+        assert validator in sample_store.latest_known_attestations
+        assert validator not in sample_store.latest_new_attestations
+        stored = sample_store.latest_known_attestations[validator]
         assert stored.message.data.target == signed_attestation.message.data.target
 
 
@@ -503,4 +503,4 @@ class TestBlockProcessing:
         # Verify the vote was processed correctly
         assert ValidatorIndex(20) == signed_attestation.message.validator_id
         assert signed_attestation.message.data.target.root == parent_hash
-        assert ValidatorIndex(20) in sample_store.latest_known_votes
+        assert ValidatorIndex(20) in sample_store.latest_known_attestations

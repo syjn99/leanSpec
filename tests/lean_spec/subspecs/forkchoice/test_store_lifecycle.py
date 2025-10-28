@@ -95,8 +95,8 @@ class TestStoreCreation:
             latest_finalized=checkpoint,
             blocks={block_hash: block},
             states={},
-            latest_known_votes={ValidatorIndex(0): signed_known},
-            latest_new_votes={ValidatorIndex(1): signed_new},
+            latest_known_attestations={ValidatorIndex(0): signed_known},
+            latest_new_attestations={ValidatorIndex(1): signed_new},
         )
 
         assert store.time == Uint64(200)
@@ -105,8 +105,8 @@ class TestStoreCreation:
         assert store.safe_target == block_hash
         assert block_hash in store.blocks
         assert store.blocks[block_hash] == block
-        assert ValidatorIndex(0) in store.latest_known_votes
-        assert ValidatorIndex(1) in store.latest_new_votes
+        assert ValidatorIndex(0) in store.latest_known_attestations
+        assert ValidatorIndex(1) in store.latest_new_attestations
 
     def test_store_factory_method(self) -> None:
         """Test Store.get_forkchoice_store factory method."""
@@ -182,8 +182,8 @@ class TestStoreDefaultValues:
         # Should have empty collections by default
         assert len(store.blocks) == 0
         assert len(store.states) == 0
-        assert len(store.latest_known_votes) == 0
-        assert len(store.latest_new_votes) == 0
+        assert len(store.latest_known_attestations) == 0
+        assert len(store.latest_new_attestations) == 0
 
     def test_store_immutability(self, sample_store: Store) -> None:
         """Test that Store fields are immutable (frozen)."""

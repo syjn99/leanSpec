@@ -148,7 +148,7 @@ class TestIntervalTicking:
 
         # Add some test votes for processing
         test_checkpoint = Checkpoint(root=Bytes32(b"test" + b"\x00" * 28), slot=Slot(1))
-        sample_store.latest_new_votes[ValidatorIndex(0)] = build_signed_attestation(
+        sample_store.latest_new_attestations[ValidatorIndex(0)] = build_signed_attestation(
             ValidatorIndex(0),
             test_checkpoint,
         )
@@ -234,20 +234,20 @@ class TestVoteProcessingTiming:
         """Test basic new vote processing."""
         # Add some new votes
         checkpoint = Checkpoint(root=Bytes32(b"test" + b"\x00" * 28), slot=Slot(1))
-        sample_store.latest_new_votes[ValidatorIndex(0)] = build_signed_attestation(
+        sample_store.latest_new_attestations[ValidatorIndex(0)] = build_signed_attestation(
             ValidatorIndex(0),
             checkpoint,
         )
 
-        initial_new_votes = len(sample_store.latest_new_votes)
-        initial_known_votes = len(sample_store.latest_known_votes)
+        initial_new_votes = len(sample_store.latest_new_attestations)
+        initial_known_votes = len(sample_store.latest_known_attestations)
 
         # Accept new votes
         sample_store.accept_new_votes()
 
         # New votes should move to known votes
-        assert len(sample_store.latest_new_votes) == 0
-        assert len(sample_store.latest_known_votes) == initial_known_votes + initial_new_votes
+        assert len(sample_store.latest_new_attestations) == 0
+        assert len(sample_store.latest_known_attestations) == initial_known_votes + initial_new_votes
 
     def test_accept_new_votes_multiple(self, sample_store: Store) -> None:
         """Test accepting multiple new votes."""
@@ -261,7 +261,7 @@ class TestVoteProcessingTiming:
         ]
 
         for i, checkpoint in enumerate(checkpoints):
-            sample_store.latest_new_votes[ValidatorIndex(i)] = build_signed_attestation(
+            sample_store.latest_new_attestations[ValidatorIndex(i)] = build_signed_attestation(
                 ValidatorIndex(i),
                 checkpoint,
             )
@@ -270,24 +270,24 @@ class TestVoteProcessingTiming:
         sample_store.accept_new_votes()
 
         # All should move to known votes
-        assert len(sample_store.latest_new_votes) == 0
-        assert len(sample_store.latest_known_votes) == 5
+        assert len(sample_store.latest_new_attestations) == 0
+        assert len(sample_store.latest_known_attestations) == 5
 
         # Verify correct mapping
         for i, checkpoint in enumerate(checkpoints):
-            stored = sample_store.latest_known_votes[ValidatorIndex(i)]
+            stored = sample_store.latest_known_attestations[ValidatorIndex(i)]
             assert stored.message.data.target == checkpoint
 
     def test_accept_new_votes_empty(self, sample_store: Store) -> None:
         """Test accepting new votes when there are none."""
-        initial_known_votes = len(sample_store.latest_known_votes)
+        initial_known_votes = len(sample_store.latest_known_attestations)
 
         # Accept votes when there are no new votes
         sample_store.accept_new_votes()
 
         # Should be no-op
-        assert len(sample_store.latest_new_votes) == 0
-        assert len(sample_store.latest_known_votes) == initial_known_votes
+        assert len(sample_store.latest_new_attestations) == 0
+        assert len(sample_store.latest_known_attestations) == initial_known_votes
 
 
 class TestProposalHeadTiming:
@@ -331,7 +331,7 @@ class TestProposalHeadTiming:
         """Test that get_proposal_head processes pending votes."""
         # Add some new votes
         checkpoint = Checkpoint(root=Bytes32(b"vote" + b"\x00" * 28), slot=Slot(1))
-        sample_store.latest_new_votes[ValidatorIndex(10)] = build_signed_attestation(
+        sample_store.latest_new_attestations[ValidatorIndex(10)] = build_signed_attestation(
             ValidatorIndex(10),
             checkpoint,
         )
@@ -340,9 +340,9 @@ class TestProposalHeadTiming:
         sample_store.get_proposal_head(Slot(1))
 
         # Votes should have been processed (moved to known votes)
-        assert ValidatorIndex(10) not in sample_store.latest_new_votes
-        assert ValidatorIndex(10) in sample_store.latest_known_votes
-        stored = sample_store.latest_known_votes[ValidatorIndex(10)]
+        assert ValidatorIndex(10) not in sample_store.latest_new_attestations
+        assert ValidatorIndex(10) in sample_store.latest_known_attestations
+        stored = sample_store.latest_known_attestations[ValidatorIndex(10)]
         assert stored.message.data.target == checkpoint
 
 

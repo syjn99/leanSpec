@@ -1,5 +1,5 @@
 """
-Forkchoice store for tracking chain state and votes.
+Forkchoice store for tracking chain state and attestations.
 
 The Store tracks all information required for the LMD GHOST forkchoice algorithm.
 """
@@ -47,7 +47,7 @@ from .helpers import get_fork_choice_head, get_latest_justified
 
 class Store(Container):
     """
-    Forkchoice store tracking chain state and validator votes.
+    Forkchoice store tracking chain state and validator attestations.
 
     Maintains all data needed for LMD GHOST fork choice algorithm including
     blocks, states, checkpoints, and validator voting records.
@@ -77,11 +77,11 @@ class Store(Container):
     states: Dict[Bytes32, "State"] = {}
     """Mapping from state root to State objects."""
 
-    latest_known_votes: Dict[ValidatorIndex, SignedAttestation] = {}
-    """Latest votes by validator that have been processed."""
+    latest_known_attestations: Dict[ValidatorIndex, SignedAttestation] = {}
+    """Latest signed attestations by validator that have been processed."""
 
-    latest_new_votes: Dict[ValidatorIndex, SignedAttestation] = {}
-    """Latest votes by validator that are pending processing."""
+    latest_new_attestations: Dict[ValidatorIndex, SignedAttestation] = {}
+    """Latest signed attestations by validator that are pending processing."""
 
     @classmethod
     def get_forkchoice_store(cls, state: State, anchor_block: Block) -> "Store":
@@ -186,14 +186,14 @@ class Store(Container):
             # On-chain attestation processing
 
             # Update known votes if this is the latest from validator
-            latest_known = self.latest_known_votes.get(validator_id)
+            latest_known = self.latest_known_attestations.get(validator_id)
             if latest_known is None or latest_known.message.data.slot < attestation_slot:
-                self.latest_known_votes[validator_id] = signed_attestation
+                self.latest_known_attestations[validator_id] = signed_attestation
 
             # Remove from new votes if this supersedes it
-            latest_new = self.latest_new_votes.get(validator_id)
+            latest_new = self.latest_new_attestations.get(validator_id)
             if latest_new is not None and latest_new.message.data.slot <= attestation_slot:
-                del self.latest_new_votes[validator_id]
+                del self.latest_new_attestations[validator_id]
         else:
             # Network gossip attestation processing
 
@@ -202,9 +202,9 @@ class Store(Container):
             assert attestation_slot <= time_slots, "Attestation from future slot"
 
             # Update new votes if this is latest from validator
-            latest_new = self.latest_new_votes.get(validator_id)
+            latest_new = self.latest_new_attestations.get(validator_id)
             if latest_new is None or latest_new.message.data.slot < attestation_slot:
-                self.latest_new_votes[validator_id] = signed_attestation
+                self.latest_new_attestations[validator_id] = signed_attestation
 
     @staticmethod
     def _is_valid_signature(signature: Bytes4000) -> bool:
@@ -295,7 +295,7 @@ class Store(Container):
 
         # Use LMD GHOST to find new head
         new_head = get_fork_choice_head(
-            self.blocks, self.latest_justified.root, self.latest_known_votes
+            self.blocks, self.latest_justified.root, self.latest_known_attestations
         )
         object.__setattr__(self, "head", new_head)
 
@@ -363,11 +363,11 @@ class Store(Container):
         head update.
         """
         # Move all new votes to known votes
-        for validator_id, vote in self.latest_new_votes.items():
-            self.latest_known_votes[validator_id] = vote
+        for validator_id, vote in self.latest_new_attestations.items():
+            self.latest_known_attestations[validator_id] = vote
 
         # Clear pending votes and update head
-        self.latest_new_votes.clear()
+        self.latest_new_attestations.clear()
         self.update_head()
 
     def update_safe_target(self) -> None:
@@ -387,7 +387,7 @@ class Store(Container):
         safe_target = get_fork_choice_head(
             self.blocks,
             self.latest_justified.root,
-            self.latest_new_votes,
+            self.latest_new_attestations,
             min_score=min_target_score,
         )
         object.__setattr__(self, "safe_target", safe_target)
@@ -507,7 +507,7 @@ class Store(Container):
             # Find new valid attestations matching post-state justification
             new_attestations: list[Attestation] = []
             new_signatures: list[Bytes4000] = []
-            for signed_attestation in self.latest_known_votes.values():
+            for signed_attestation in self.latest_known_attestations.values():
                 # Skip if target block is unknown in our store
                 data = signed_attestation.message.data
                 if data.head.root not in self.blocks:

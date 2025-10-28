@@ -172,14 +172,14 @@ class TestBlockProduction:
         head_block = sample_store.blocks[sample_store.head]
 
         # Add some attestations to the store
-        sample_store.latest_known_votes[ValidatorIndex(5)] = build_signed_attestation(
+        sample_store.latest_known_attestations[ValidatorIndex(5)] = build_signed_attestation(
             validator=ValidatorIndex(5),
             slot=head_block.slot,
             head=Checkpoint(root=sample_store.head, slot=head_block.slot),
             source=sample_store.latest_justified,
             target=sample_store.get_vote_target(),
         )
-        sample_store.latest_known_votes[ValidatorIndex(6)] = build_signed_attestation(
+        sample_store.latest_known_attestations[ValidatorIndex(6)] = build_signed_attestation(
             validator=ValidatorIndex(6),
             slot=head_block.slot,
             head=Checkpoint(root=sample_store.head, slot=head_block.slot),
@@ -248,7 +248,7 @@ class TestBlockProduction:
         validator_idx = ValidatorIndex(3)
 
         # Ensure no attestations in store
-        sample_store.latest_known_votes.clear()
+        sample_store.latest_known_attestations.clear()
 
         block, _signatures = sample_store.produce_block_with_signatures(
             slot,
@@ -268,7 +268,7 @@ class TestBlockProduction:
 
         # Add some attestations to test state computation
         head_block = sample_store.blocks[sample_store.head]
-        sample_store.latest_known_votes[ValidatorIndex(7)] = build_signed_attestation(
+        sample_store.latest_known_attestations[ValidatorIndex(7)] = build_signed_attestation(
             validator=ValidatorIndex(7),
             slot=head_block.slot,
             head=Checkpoint(root=sample_store.head, slot=head_block.slot),

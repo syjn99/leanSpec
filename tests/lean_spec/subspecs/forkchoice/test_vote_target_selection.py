@@ -378,7 +378,7 @@ class TestSafeTargetComputation:
             latest_finalized=checkpoint,
             blocks=blocks,
             states={genesis_hash: genesis_state, block_1_hash: block_1_state},
-            latest_new_votes=new_votes,
+            latest_new_attestations=new_votes,
         )
 
         # Update safe target with votes
