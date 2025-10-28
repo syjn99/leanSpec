@@ -42,7 +42,7 @@ class Attestation(Container):
     """The index of the validator making the attestation."""
 
     data: AttestationData
-    """The attestation data voted on by the validator."""
+    """The attestation data produced by the validator."""
 
 
 class SignedAttestation(Container):
@@ -62,9 +62,9 @@ class AggregatedAttestations(Container):
     """Bitfield indicating which validators participated in the aggregation."""
 
     data: AttestationData
-    """Combined vote data similar to the beacon chain format.
+    """Combined attestation data similar to the beacon chain format.
 
-    Multiple validator votes are aggregated here without the complexity of
+    Multiple validator attestations are aggregated here without the complexity of
     committee assignments.
     """
 
@@ -73,10 +73,10 @@ class SignedAggregatedAttestations(Container):
     """Aggregated attestation bundled with aggregated signatures."""
 
     message: AggregatedAttestations
-    """Aggregated vote data."""
+    """Aggregated attestation data."""
 
     signature: AggregatedSignatures
-    """Aggregated vote plus its combined signature.
+    """Aggregated attestation plus its combined signature.
 
     Stores a naive list of validator signatures that mirrors the attestation
     order.
