@@ -50,7 +50,7 @@ class Store(Container):
     Forkchoice store tracking chain state and validator attestations.
 
     Maintains all data needed for LMD GHOST fork choice algorithm including
-    blocks, states, checkpoints, and validator voting records.
+    blocks, states, checkpoints, and validator attesation records.
     """
 
     time: Uint64
@@ -63,7 +63,7 @@ class Store(Container):
     """Root of the current canonical chain head block."""
 
     safe_target: Bytes32
-    """Root of the current safe target for attestation voting."""
+    """Root of the current safe target for attestation."""
 
     latest_justified: Checkpoint
     """Highest slot justified checkpoint known to the store."""
@@ -331,7 +331,7 @@ class Store(Container):
 
         Different actions are performed based on interval within slot:
         - Interval 0: Process attestations if proposal exists
-        - Interval 1: Validator voting period (no action)
+        - Interval 1: Validator attesting period (no action)
         - Interval 2: Update safe target
         - Interval 3: Process accumulated attestations
 
@@ -346,7 +346,7 @@ class Store(Container):
             if has_proposal:
                 self.accept_new_attestations()
         elif current_interval == Uint64(1):
-            # Validator voting interval - no action
+            # Validator attesting interval - no action
             pass
         elif current_interval == Uint64(2):
             # Update safe target for next attestations
@@ -422,7 +422,7 @@ class Store(Container):
         and finalization constraints.
 
         Returns:
-            Target checkpoint for voting.
+            Target checkpoint for attestation.
         """
         # Start from current head
         target_block_root = self.head
@@ -561,7 +561,7 @@ class Store(Container):
         Produce an attestation for the given slot and validator.
 
         This method constructs an Attestation object according to the lean protocol
-        specification for attestation voting. The attestation represents the
+        specification for attestation. The attestation represents the
         validator's view of the chain state and their choice for the
         next justified checkpoint.
 

@@ -678,7 +678,7 @@ def test_process_attestations_justification_and_finalization(genesis_state: Stat
     # Advance to slot 5 so the header at slot 4 caches its state root.
     state = state.process_slots(Slot(5))
 
-    # Define source (genesis) and target (slot 4) checkpoints for voting.
+    # Define source (genesis) and target (slot 4) checkpoints for attestation.
     genesis_checkpoint = Checkpoint(
         root=state.historical_block_hashes[0],  # Canonical root for slot 0
         slot=Slot(0),

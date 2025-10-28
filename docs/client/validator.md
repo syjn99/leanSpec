@@ -2,7 +2,7 @@
 
 ## Overview
 
-Validators participate in consensus by proposing blocks and voting. This
+Validators participate in consensus by proposing blocks and producing attestations. This
 document describes what honest validators do.
 
 ## Validator Assignment
@@ -119,7 +119,7 @@ Clients must implement the validator logic correctly. This includes:
 
 - Tracking which validators they control
 - Proposing when scheduled
-- Voting every slot
+- Producing an attestation every slot
 - Following fork choice
 - Obeying timing rules
 

@@ -1,4 +1,4 @@
-"""Tests for validator block production and attestation voting functionality."""
+"""Tests for validator block production and attestation functionality."""
 
 import pytest
 

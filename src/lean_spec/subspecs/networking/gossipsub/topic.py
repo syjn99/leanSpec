@@ -36,10 +36,10 @@ class GossipsubTopic(Enum):
     - `payload_type`: `SignedBlockWithAttestation`
     """
 
-    VOTE = ("vote", SignedAttestation)
+    ATTESTATION = ("attestation", SignedAttestation)
     """
-    Topic for gossiping new votes (attestations).
+    Topic for gossiping new attestations.
 
-    - `value`: "vote"
+    - `value`: "attestation"
     - `payload_type`: `SignedAttestation`
     """
