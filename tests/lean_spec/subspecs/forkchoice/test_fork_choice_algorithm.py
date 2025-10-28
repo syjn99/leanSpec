@@ -73,7 +73,7 @@ class TestLMDGHOSTAlgorithm:
         head = get_fork_choice_head(
             blocks=sample_blocks,
             root=root_hash,
-            latest_votes={},  # No votes
+            latest_attestations={},  # No votes
             min_score=0,
         )
 
@@ -94,7 +94,7 @@ class TestLMDGHOSTAlgorithm:
         head = get_fork_choice_head(
             blocks=sample_blocks,
             root=root_hash,
-            latest_votes=votes,
+            latest_attestations=votes,
             min_score=0,
         )
 
@@ -178,7 +178,7 @@ class TestLMDGHOSTAlgorithm:
         head = get_fork_choice_head(
             blocks=blocks,
             root=genesis_hash,
-            latest_votes=votes,
+            latest_attestations=votes,
             min_score=0,
         )
 
@@ -237,7 +237,7 @@ class TestLMDGHOSTAlgorithm:
         head = get_fork_choice_head(
             blocks=blocks,
             root=genesis_hash,
-            latest_votes=votes,
+            latest_attestations=votes,
             min_score=0,
         )
 
@@ -284,7 +284,7 @@ class TestLMDGHOSTAlgorithm:
         head = get_fork_choice_head(
             blocks=blocks,
             root=genesis_hash,
-            latest_votes={},
+            latest_attestations={},
             min_score=0,
         )
 
@@ -323,7 +323,7 @@ class TestLMDGHOSTAlgorithm:
         result = get_fork_choice_head(
             blocks=blocks,
             root=list(blocks.keys())[0],  # Genesis
-            latest_votes=votes,
+            latest_attestations=votes,
             min_score=0,
         )
 
@@ -386,7 +386,7 @@ class TestLMDGHOSTAlgorithm:
         head = get_fork_choice_head(
             blocks=blocks,
             root=genesis_hash,
-            latest_votes=votes,
+            latest_attestations=votes,
             min_score=0,
         )
 
@@ -429,7 +429,7 @@ class TestLMDGHOSTAlgorithm:
         head = get_fork_choice_head(
             blocks=blocks,
             root=genesis_hash,
-            latest_votes=votes,
+            latest_attestations=votes,
             min_score=2,  # Require at least 2 votes
         )
 

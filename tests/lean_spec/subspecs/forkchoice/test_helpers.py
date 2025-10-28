@@ -74,7 +74,7 @@ class TestForkChoiceHeadFunction:
         }
 
         head = get_fork_choice_head(
-            blocks=sample_blocks, root=root_hash, latest_votes=votes, min_score=0
+            blocks=sample_blocks, root=root_hash, latest_attestations=votes, min_score=0
         )
 
         assert head == target_hash
@@ -85,7 +85,7 @@ class TestForkChoiceHeadFunction:
         leaf_hash = list(sample_blocks.keys())[2]  # block_b is the leaf
 
         head = get_fork_choice_head(
-            blocks=sample_blocks, root=root_hash, latest_votes={}, min_score=0
+            blocks=sample_blocks, root=root_hash, latest_attestations={}, min_score=0
         )
 
         assert head == leaf_hash
@@ -104,7 +104,7 @@ class TestForkChoiceHeadFunction:
         }
 
         head = get_fork_choice_head(
-            blocks=sample_blocks, root=root_hash, latest_votes=votes, min_score=2
+            blocks=sample_blocks, root=root_hash, latest_attestations=votes, min_score=2
         )
 
         # Should fall back to root since min_score not met
@@ -132,7 +132,7 @@ class TestForkChoiceHeadFunction:
         }
 
         head = get_fork_choice_head(
-            blocks=sample_blocks, root=root_hash, latest_votes=votes, min_score=0
+            blocks=sample_blocks, root=root_hash, latest_attestations=votes, min_score=0
         )
 
         assert head == target_hash
