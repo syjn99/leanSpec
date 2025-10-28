@@ -344,7 +344,7 @@ class Store(Container):
         if current_interval == Uint64(0):
             # Start of slot - process votes if proposal exists
             if has_proposal:
-                self.accept_new_votes()
+                self.accept_new_attestations()
         elif current_interval == Uint64(1):
             # Validator voting interval - no action
             pass
@@ -353,20 +353,20 @@ class Store(Container):
             self.update_safe_target()
         else:
             # End of slot - process accumulated votes
-            self.accept_new_votes()
+            self.accept_new_attestations()
 
-    def accept_new_votes(self) -> None:
+    def accept_new_attestations(self) -> None:
         """
-        Process pending votes and update forkchoice head.
+        Process pending attestations and update forkchoice head.
 
-        Moves votes from latest_new_votes to latest_known_votes and triggers
+        Moves attestations from latest_new_attestations to latest_known_attestations and triggers
         head update.
         """
-        # Move all new votes to known votes
-        for validator_id, vote in self.latest_new_attestations.items():
-            self.latest_known_attestations[validator_id] = vote
+        # Move all new attestations to known attestations
+        for validator_id, signed_attestation in self.latest_new_attestations.items():
+            self.latest_known_attestations[validator_id] = signed_attestation
 
-        # Clear pending votes and update head
+        # Clear pending attestations and update head
         self.latest_new_attestations.clear()
         self.update_head()
 
@@ -410,7 +410,7 @@ class Store(Container):
         self.advance_time(slot_time, True)
 
         # Process any pending votes (no-op if already processed)
-        self.accept_new_votes()
+        self.accept_new_attestations()
 
         return self.head
 

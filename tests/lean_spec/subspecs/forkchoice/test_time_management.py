@@ -243,7 +243,7 @@ class TestVoteProcessingTiming:
         initial_known_votes = len(sample_store.latest_known_attestations)
 
         # Accept new votes
-        sample_store.accept_new_votes()
+        sample_store.accept_new_attestations()
 
         # New votes should move to known votes
         assert len(sample_store.latest_new_attestations) == 0
@@ -267,7 +267,7 @@ class TestVoteProcessingTiming:
             )
 
         # Accept all new votes
-        sample_store.accept_new_votes()
+        sample_store.accept_new_attestations()
 
         # All should move to known votes
         assert len(sample_store.latest_new_attestations) == 0
@@ -283,7 +283,7 @@ class TestVoteProcessingTiming:
         initial_known_votes = len(sample_store.latest_known_attestations)
 
         # Accept votes when there are no new votes
-        sample_store.accept_new_votes()
+        sample_store.accept_new_attestations()
 
         # Should be no-op
         assert len(sample_store.latest_new_attestations) == 0
