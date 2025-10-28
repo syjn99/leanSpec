@@ -247,7 +247,10 @@ class TestAttestationProcessingTiming:
 
         # New attestations should move to known attestations
         assert len(sample_store.latest_new_attestations) == 0
-        assert len(sample_store.latest_known_attestations) == initial_known_attestations + initial_new_attestations
+        assert (
+            len(sample_store.latest_known_attestations)
+            == initial_known_attestations + initial_new_attestations
+        )
 
     def test_accept_new_attestations_multiple(self, sample_store: Store) -> None:
         """Test accepting multiple new attestations."""

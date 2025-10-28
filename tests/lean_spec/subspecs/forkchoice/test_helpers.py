@@ -60,7 +60,9 @@ def sample_blocks() -> Dict[Bytes32, Block]:
 class TestForkChoiceHeadFunction:
     """Test the pure get_fork_choice_head helper function."""
 
-    def test_get_fork_choice_head_with_attestations(self, sample_blocks: Dict[Bytes32, Block]) -> None:
+    def test_get_fork_choice_head_with_attestations(
+        self, sample_blocks: Dict[Bytes32, Block]
+    ) -> None:
         """Test get_fork_choice_head with validator attestations."""
         root_hash = list(sample_blocks.keys())[0]
         target_hash = list(sample_blocks.keys())[2]  # block_b
@@ -110,7 +112,9 @@ class TestForkChoiceHeadFunction:
         # Should fall back to root since min_score not met
         assert head == root_hash
 
-    def test_get_fork_choice_head_multiple_attestations(self, sample_blocks: Dict[Bytes32, Block]) -> None:
+    def test_get_fork_choice_head_multiple_attestations(
+        self, sample_blocks: Dict[Bytes32, Block]
+    ) -> None:
         """Test get_fork_choice_head with multiple attestations."""
         root_hash = list(sample_blocks.keys())[0]
         target_hash = list(sample_blocks.keys())[2]  # block_b
