@@ -74,7 +74,7 @@ def genesis_state(sample_config: Config) -> State:
 def _create_block(
     slot: int,
     parent_header: BlockHeader,
-    votes: List[Attestation] | None = None,
+    attestations: List[Attestation] | None = None,
 ) -> Block:
     """
     Helper: construct a valid `Block` for a given slot.
@@ -93,7 +93,7 @@ def _create_block(
         Slot number for the new block.
     parent_header : BlockHeader
         The header of the parent block to link against.
-    votes : List[ValidatorAttestation] | None
+    attestations : List[Attestation] | None
         Optional attestations to include.
 
     Returns
@@ -101,8 +101,8 @@ def _create_block(
     Block
         The constructed block message with attestations embedded.
     """
-    # Create a block body with the provided votes or an empty list.
-    body = BlockBody(attestations=Attestations(data=votes or []))
+    # Create a block body with the provided attestations or an empty list.
+    body = BlockBody(attestations=Attestations(data=attestations or []))
     # Construct the inner block message with correct parent_root linkage.
     block_message = Block(
         slot=Slot(slot),
@@ -658,7 +658,7 @@ def test_process_attestations_justification_and_finalization(genesis_state: Stat
     Scenario
     --------
     - Build a short chain: genesis -> slot 1 -> slot 4.
-    - Cast 7/10 votes (≥ 2/3) to justify slot 4 from genesis.
+    - Cast 7/10 attestations (≥ 2/3) to justify slot 4 from genesis.
     - Because no other justifiable slot lies between 0 and 4, finalize genesis.
     """
     # Begin from genesis.
@@ -688,8 +688,8 @@ def test_process_attestations_justification_and_finalization(genesis_state: Stat
         slot=Slot(4),
     )
 
-    # Create 7 votes from distinct validators (indices 0..6) to reach ≥2/3.
-    votes_for_4 = [
+    # Create 7 attestations from distinct validators (indices 0..6) to reach ≥2/3.
+    attestations_for_4 = [
         _build_signed_attestation(
             validator=ValidatorIndex(i),
             slot=Slot(4),
@@ -701,7 +701,7 @@ def test_process_attestations_justification_and_finalization(genesis_state: Stat
     ]
 
     # Process attestations directly; returns a new state snapshot.
-    new_state = state.process_attestations(votes_for_4)  # type: ignore
+    new_state = state.process_attestations(attestations_for_4)  # type: ignore
 
     # The target (slot 4) should now be justified.
     assert new_state.latest_justified == checkpoint4

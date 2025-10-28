@@ -406,7 +406,7 @@ class State(Container):
         # First process the block header.
         state = self.process_block_header(block)
 
-        # Process justification votes (attestations).
+        # Process justification attestations.
         return state.process_attestations(block.body.attestations)
 
     def process_attestations(
@@ -414,18 +414,18 @@ class State(Container):
         attestations: Attestations,
     ) -> "State":
         """
-        Apply attestation votes and update justification/finalization
+        Apply attestations and update justification/finalization
         according to the Lean Consensus 3SF-mini rules.
 
         This simplified consensus mechanism:
-        1. Processes each attestation vote
+        1. Processes each attestation
         2. Updates justified status for target checkpoints
         3. Applies finalization rules based on justified status
 
         Parameters
         ----------
         attestations : Attestations
-            The list of attestation votes to process.
+            The list of attestations to process.
 
         Returns:
         -------
@@ -439,13 +439,13 @@ class State(Container):
 
         # Process each attestation in the block.
         for attestation in attestations:
-            vote = attestation.data
-            source = vote.source
-            target = vote.target
+            attestation_data = attestation.data
+            source = attestation_data.source
+            target = attestation_data.target
 
-            # Validate that this is a reasonable vote (source comes before target).
+            # Validate that this is a reasonable attestation (source comes before target).
             if source.slot.as_int() >= target.slot.as_int():
-                continue  # Skip invalid votes
+                continue  # Skip invalid attestation
 
             # Check if source checkpoint is justified.
             source_slot_int = source.slot.as_int()
