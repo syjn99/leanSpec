@@ -91,7 +91,7 @@ class TestAttestationValidation:
         sample_store.blocks[source_hash] = source_block
         sample_store.blocks[target_hash] = target_block
 
-        # Create valid signed vote
+        # Create valid signed attestation
         signed_attestation = build_signed_attestation(
             validator=ValidatorIndex(0),
             slot=Slot(2),
@@ -184,7 +184,7 @@ class TestAttestationValidation:
         sample_store.blocks[source_hash] = source_block
         sample_store.blocks[target_hash] = target_block
 
-        # Create signed vote with mismatched checkpoint slot
+        # Create signed attestation with mismatched checkpoint slot
         signed_attestation = build_signed_attestation(
             validator=ValidatorIndex(0),
             slot=Slot(2),
@@ -222,7 +222,7 @@ class TestAttestationValidation:
         sample_store.blocks[source_hash] = source_block
         sample_store.blocks[target_hash] = target_block
 
-        # Create signed vote for future slot
+        # Create signed attestation for future slot
         signed_attestation = build_signed_attestation(
             validator=ValidatorIndex(0),
             slot=Slot(1000),  # Too far in future
@@ -309,7 +309,7 @@ class TestAttestationProcessing:
         sample_store.blocks[source_hash] = source_block
         sample_store.blocks[target_hash] = target_block
 
-        # Create valid signed vote
+        # Create valid signed attestation
         signed_attestation = build_signed_attestation(
             validator=ValidatorIndex(5),
             slot=Slot(2),
@@ -321,7 +321,7 @@ class TestAttestationProcessing:
         # Process as network attestation
         sample_store.process_attestation(signed_attestation, is_from_block=False)
 
-        # Vote should be added to new votes
+        # Attestation should be added to new attestations
         assert ValidatorIndex(5) in sample_store.latest_new_attestations
         stored = sample_store.latest_new_attestations[ValidatorIndex(5)]
         assert stored.message.data.target == signed_attestation.message.data.target
@@ -351,7 +351,7 @@ class TestAttestationProcessing:
         sample_store.blocks[source_hash] = source_block
         sample_store.blocks[target_hash] = target_block
 
-        # Create valid signed vote
+        # Create valid signed attestation
         signed_attestation = build_signed_attestation(
             validator=ValidatorIndex(7),
             slot=Slot(2),
@@ -363,7 +363,7 @@ class TestAttestationProcessing:
         # Process as block attestation
         sample_store.process_attestation(signed_attestation, is_from_block=True)
 
-        # Vote should be added to known votes
+        # Attestation should be added to known attestations
         assert ValidatorIndex(7) in sample_store.latest_known_attestations
         stored = sample_store.latest_known_attestations[ValidatorIndex(7)]
         assert stored.message.data.target == signed_attestation.message.data.target
@@ -415,13 +415,13 @@ class TestAttestationProcessing:
         )
         sample_store.process_attestation(signed_attestation_2, is_from_block=False)
 
-        # Should have the newer vote
+        # Should have the newer attestation
         assert validator in sample_store.latest_new_attestations
         stored = sample_store.latest_new_attestations[validator]
         assert stored.message.data.target == signed_attestation_2.message.data.target
 
     def test_process_attestation_from_block_supersedes_new(self, sample_store: Store) -> None:
-        """Test that block attestations remove corresponding new votes."""
+        """Test that block attestations remove corresponding new attestations."""
         # Create blocks
         source_block = Block(
             slot=Slot(1),
@@ -447,7 +447,7 @@ class TestAttestationProcessing:
 
         validator = ValidatorIndex(15)
 
-        # First process as network vote
+        # First process as network attestation
         signed_attestation = build_signed_attestation(
             validator=validator,
             slot=Slot(2),
@@ -457,13 +457,13 @@ class TestAttestationProcessing:
         )
         sample_store.process_attestation(signed_attestation, is_from_block=False)
 
-        # Should be in new votes
+        # Should be in new attestations
         assert validator in sample_store.latest_new_attestations
 
-        # Process same vote as block attestation
+        # Process same attestation as block attestation
         sample_store.process_attestation(signed_attestation, is_from_block=True)
 
-        # Vote should move to known votes and be removed from new votes
+        # Attestation should move to known attestations and be removed from new attestations
         assert validator in sample_store.latest_known_attestations
         assert validator not in sample_store.latest_new_attestations
         stored = sample_store.latest_known_attestations[validator]
@@ -488,7 +488,7 @@ class TestBlockProcessing:
         # Add parent to store
         sample_store.blocks[parent_hash] = parent_block
 
-        # Create a vote that will be included in block
+        # Create a signed attestation that will be included in block
         signed_attestation = build_signed_attestation(
             validator=ValidatorIndex(20),
             slot=Slot(2),
@@ -500,7 +500,7 @@ class TestBlockProcessing:
         # Test processing the block attestation
         sample_store.process_attestation(signed_attestation, is_from_block=True)
 
-        # Verify the vote was processed correctly
+        # Verify the attestation was processed correctly
         assert ValidatorIndex(20) == signed_attestation.message.validator_id
         assert signed_attestation.message.data.target.root == parent_hash
         assert ValidatorIndex(20) in sample_store.latest_known_attestations
