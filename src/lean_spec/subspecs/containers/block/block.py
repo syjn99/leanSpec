@@ -29,7 +29,7 @@ class BlockBody(Container):
     """Plain validator attestations carried in the block body.
 
     Individual signatures live in the aggregated block signature list, so
-    these entries contain only vote data without per-attestation signatures.
+    these entries contain only attestation data without per-attestation signatures.
     """
 
 
@@ -87,14 +87,14 @@ class BlockWithAttestation(Container):
     """The proposed block message."""
 
     proposer_attestation: Attestation
-    """The proposer's vote corresponding to this block."""
+    """The proposer's attestation corresponding to this block."""
 
 
 class SignedBlockWithAttestation(Container):
-    """Envelope carrying a block, proposer vote, and aggregated signatures."""
+    """Envelope carrying a block, an attestation from proposer, and aggregated signatures."""
 
     message: BlockWithAttestation
-    """The block plus proposer vote being signed."""
+    """The block plus an attestation from proposer being signed."""
 
     signature: BlockSignatures
     """Aggregated signature payload for the block.
