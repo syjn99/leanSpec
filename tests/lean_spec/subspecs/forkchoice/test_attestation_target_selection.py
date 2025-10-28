@@ -1,4 +1,4 @@
-"""Tests for vote target selection and calculation."""
+"""Tests for attestation target selection and calculation."""
 
 import pytest
 
@@ -26,11 +26,11 @@ def config() -> Config:
     return Config(genesis_time=Uint64(1000))
 
 
-class TestVoteTargetCalculation:
-    """Test vote target calculation logic."""
+class TestAttestationTargetCalculation:
+    """Test attestation target calculation logic."""
 
-    def test_get_vote_target_basic(self, config: Config) -> None:
-        """Test basic vote target selection."""
+    def test_get_attestation_target_basic(self, config: Config) -> None:
+        """Test basic attestation target selection."""
         # Create blocks
         genesis = Block(
             slot=Slot(0),
@@ -58,7 +58,7 @@ class TestVoteTargetCalculation:
         # Recent finalization
         finalized = Checkpoint(root=genesis_hash, slot=Slot(0))
 
-        # Create a Store instance to call get_vote_target
+        # Create a Store instance to call get_attestation_target
         store = Store(
             time=Uint64(100),
             config=config,
@@ -70,14 +70,14 @@ class TestVoteTargetCalculation:
             states={},
         )
 
-        target = store.get_vote_target()
+        target = store.get_attestation_target()
 
         # Should target the head block since finalization is recent
         assert target.root == block_1_hash
         assert target.slot == Slot(1)
 
-    def test_vote_target_with_old_finalized(self, config: Config) -> None:
-        """Test vote target selection with very old finalized checkpoint."""
+    def test_attestation_target_with_old_finalized(self, config: Config) -> None:
+        """Test attestation target selection with very old finalized checkpoint."""
         # Create a chain where finalized block is far back
         blocks = {}
 
@@ -103,7 +103,7 @@ class TestVoteTargetCalculation:
         # Current head is at slot 9
         head_hash = next(h for h, b in blocks.items() if b.slot == Slot(9))
 
-        # Create a Store instance to call get_vote_target
+        # Create a Store instance to call get_attestation_target
         store = Store(
             time=Uint64(100),
             config=config,
@@ -115,15 +115,15 @@ class TestVoteTargetCalculation:
             states={},
         )
 
-        target = store.get_vote_target()
+        target = store.get_attestation_target()
 
         # Should return a valid checkpoint
         assert isinstance(target, Checkpoint)
         assert target.root in blocks
         assert target.slot.as_int() >= 0
 
-    def test_vote_target_walks_back_from_head(self, config: Config) -> None:
-        """Test that vote target walks back from head when needed."""
+    def test_attestation_target_walks_back_from_head(self, config: Config) -> None:
+        """Test that attestation target walks back from head when needed."""
         # Create blocks
         genesis = Block(
             slot=Slot(0),
@@ -173,16 +173,16 @@ class TestVoteTargetCalculation:
             states={},
         )
 
-        target = store.get_vote_target()
+        target = store.get_attestation_target()
 
         # Should walk back towards safe target
         assert target.root in blocks
 
-    def test_vote_target_justifiable_slot_constraint(
+    def test_attestation_target_justifiable_slot_constraint(
         self,
         config: Config,
     ) -> None:
-        """Test that vote target respects justifiable slot constraints."""
+        """Test that attestation target respects justifiable slot constraints."""
         # Create a long chain to test slot justification
         blocks = {}
         prev_hash = Bytes32.zero()
@@ -219,7 +219,7 @@ class TestVoteTargetCalculation:
             states={},
         )
 
-        target = store.get_vote_target()
+        target = store.get_attestation_target()
 
         # Should return a justifiable slot
         assert isinstance(target, Checkpoint)
@@ -232,8 +232,8 @@ class TestVoteTargetCalculation:
         # The is_justifiable_after method should return True for valid slots
         assert target_slot.is_justifiable_after(finalized_slot)
 
-    def test_vote_target_with_same_head_and_safe_target(self, config: Config) -> None:
-        """Test vote target when head and safe_target are the same."""
+    def test_attestation_target_with_same_head_and_safe_target(self, config: Config) -> None:
+        """Test attestation target when head and safe_target are the same."""
         # Create simple chain
         genesis = Block(
             slot=Slot(0),
@@ -272,7 +272,7 @@ class TestVoteTargetCalculation:
             states={},
         )
 
-        target = store.get_vote_target()
+        target = store.get_attestation_target()
 
         # Should target the head (which is also safe_target)
         assert target.root == head_hash
@@ -320,9 +320,9 @@ class TestSafeTargetComputation:
         # Safe target should be set
         assert store.safe_target == genesis_block_hash
 
-    def test_safe_target_with_votes(self, config: Config) -> None:
-        """Test safe target computation with votes."""
-        # Create blocks for voting
+    def test_safe_target_with_attestations(self, config: Config) -> None:
+        """Test safe target computation with attestations."""
+        # Create blocks for attestations
         genesis = Block(
             slot=Slot(0),
             proposer_index=Uint64(0),
@@ -357,8 +357,8 @@ class TestSafeTargetComputation:
         # Create state for block_1 (copy genesis state and update slot)
         block_1_state = genesis_state.model_copy(update={"slot": Slot(1)})
 
-        # Add some new votes
-        new_votes = {
+        # Add some new attestations
+        new_attestations = {
             ValidatorIndex(0): build_signed_attestation(
                 ValidatorIndex(0),
                 Checkpoint(root=block_1_hash, slot=Slot(1)),
@@ -378,10 +378,10 @@ class TestSafeTargetComputation:
             latest_finalized=checkpoint,
             blocks=blocks,
             states={genesis_hash: genesis_state, block_1_hash: block_1_state},
-            latest_new_attestations=new_votes,
+            latest_new_attestations=new_attestations,
         )
 
-        # Update safe target with votes
+        # Update safe target with attestations
         store.update_safe_target()
 
         # Should have computed a safe target
@@ -390,10 +390,10 @@ class TestSafeTargetComputation:
 
 
 class TestEdgeCases:
-    """Test edge cases in vote target selection."""
+    """Test edge cases in attestation target selection."""
 
-    def test_vote_target_empty_blocks(self, config: Config) -> None:
-        """Test vote target with minimal block set."""
+    def test_attestation_target_empty_blocks(self, config: Config) -> None:
+        """Test attestation target with minimal block set."""
         checkpoint = Checkpoint.default()
 
         store = Store(
@@ -409,10 +409,10 @@ class TestEdgeCases:
 
         # Should handle empty blocks gracefully (or raise appropriate error)
         with pytest.raises(KeyError):  # Expected since head block doesn't exist
-            store.get_vote_target()
+            store.get_attestation_target()
 
-    def test_vote_target_single_block(self, config: Config) -> None:
-        """Test vote target with only one block."""
+    def test_attestation_target_single_block(self, config: Config) -> None:
+        """Test attestation target with only one block."""
         genesis = Block(
             slot=Slot(0),
             proposer_index=Uint64(0),
@@ -435,7 +435,7 @@ class TestEdgeCases:
             states={},
         )
 
-        target = store.get_vote_target()
+        target = store.get_attestation_target()
 
         # Should target the only available block
         assert target.root == genesis_hash

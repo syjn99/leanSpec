@@ -177,14 +177,14 @@ class TestBlockProduction:
             slot=head_block.slot,
             head=Checkpoint(root=sample_store.head, slot=head_block.slot),
             source=sample_store.latest_justified,
-            target=sample_store.get_vote_target(),
+            target=sample_store.get_attestation_target(),
         )
         sample_store.latest_known_attestations[ValidatorIndex(6)] = build_signed_attestation(
             validator=ValidatorIndex(6),
             slot=head_block.slot,
             head=Checkpoint(root=sample_store.head, slot=head_block.slot),
             source=sample_store.latest_justified,
-            target=sample_store.get_vote_target(),
+            target=sample_store.get_attestation_target(),
         )
 
         slot = Slot(2)
@@ -273,7 +273,7 @@ class TestBlockProduction:
             slot=head_block.slot,
             head=Checkpoint(root=sample_store.head, slot=head_block.slot),
             source=sample_store.latest_justified,
-            target=sample_store.get_vote_target(),
+            target=sample_store.get_attestation_target(),
         )
 
         block, _signatures = sample_store.produce_block_with_signatures(
@@ -330,7 +330,7 @@ class TestAttestationProduction:
         attestation = sample_store.produce_attestation(slot, validator_idx)
 
         # Target should match the store's attestation target calculation
-        expected_target = sample_store.get_vote_target()
+        expected_target = sample_store.get_attestation_target()
         assert attestation.data.target.root == expected_target.root
         assert attestation.data.target.slot == expected_target.slot
 

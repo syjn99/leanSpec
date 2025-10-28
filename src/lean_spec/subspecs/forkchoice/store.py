@@ -140,7 +140,7 @@ class Store(Container):
         attestation = signed_attestation.message
         data = attestation.data
 
-        # Validate vote targets exist in store
+        # Validate attestation targets exist in store
         assert data.source.root in self.blocks, f"Unknown source block: {data.source.root.hex()}"
         assert data.target.root in self.blocks, f"Unknown target block: {data.target.root.hex()}"
         assert data.head.root in self.blocks, f"Unknown head block: {data.head.root.hex()}"
@@ -414,9 +414,9 @@ class Store(Container):
 
         return self.head
 
-    def get_vote_target(self) -> Checkpoint:
+    def get_attestation_target(self) -> Checkpoint:
         """
-        Calculate target checkpoint for validator votes.
+        Calculate target checkpoint for validator attestations.
 
         Determines appropriate attestation target based on head, safe target,
         and finalization constraints.
@@ -558,22 +558,22 @@ class Store(Container):
         validator_index: ValidatorIndex,
     ) -> Attestation:
         """
-        Produce an attestation vote for the given slot and validator.
+        Produce an attestation for the given slot and validator.
 
-        This method constructs a Vote object according to the lean protocol
-        specification for attestation voting. The vote represents the
+        This method constructs an Attestation object according to the lean protocol
+        specification for attestation voting. The attestation represents the
         validator's view of the chain state and their choice for the
         next justified checkpoint.
 
         The algorithm:
         1. Get the current head
-        2. Calculate the appropriate vote target using current forkchoice state
-        3. Use the store's latest justified checkpoint as the vote source
-        4. Construct and return the complete Vote object
+        2. Calculate the appropriate attestation target using current forkchoice state
+        3. Use the store's latest justified checkpoint as the attestation source
+        4. Construct and return the complete Attestation object
 
         Args:
-            slot: The slot for which to produce the attestation vote.
-            validator_index: The validator index producing the vote.
+            slot: The slot for which to produce the attestation.
+            validator_index: The validator index producing the attestation.
 
         Returns:
             A fully constructed Attestation object ready for signing and broadcast.
@@ -585,11 +585,11 @@ class Store(Container):
             slot=self.blocks[head_root].slot,
         )
 
-        # Calculate the target checkpoint for this vote
+        # Calculate the target checkpoint for this attestation
         #
         # This uses the store's current forkchoice state to determine
         # the appropriate attestation target
-        target_checkpoint = self.get_vote_target()
+        target_checkpoint = self.get_attestation_target()
 
         attestation_data = AttestationData(
             slot=slot,
