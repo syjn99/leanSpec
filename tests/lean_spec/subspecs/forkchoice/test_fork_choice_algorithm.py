@@ -60,11 +60,11 @@ def sample_blocks() -> Dict[Bytes32, Block]:
 class TestLMDGHOSTAlgorithm:
     """Test the core LMD GHOST fork choice algorithm."""
 
-    def test_fork_choice_no_votes(self, sample_blocks: Dict[Bytes32, Block]) -> None:
+    def test_fork_choice_no_attestations(self, sample_blocks: Dict[Bytes32, Block]) -> None:
         """
-        Test fork choice algorithm with no votes walks to the leaf.
+        Test fork choice algorithm with no attestations walks to the leaf.
 
-        With no votes, fork choice should walk down the tree and select the
+        With no attestations, fork choice should walk down the tree and select the
         leaf block (the furthest descendant), breaking ties by lexicographic hash.
         """
         root_hash = list(sample_blocks.keys())[0]
@@ -73,18 +73,18 @@ class TestLMDGHOSTAlgorithm:
         head = get_fork_choice_head(
             blocks=sample_blocks,
             root=root_hash,
-            latest_attestations={},  # No votes
+            latest_attestations={},  # No attestations
             min_score=0,
         )
 
         assert head == leaf_hash
 
-    def test_fork_choice_single_vote(self, sample_blocks: Dict[Bytes32, Block]) -> None:
-        """Test fork choice algorithm with a single vote."""
+    def test_fork_choice_single_attestation(self, sample_blocks: Dict[Bytes32, Block]) -> None:
+        """Test fork choice algorithm with a single attestation."""
         root_hash = list(sample_blocks.keys())[0]
         target_hash = list(sample_blocks.keys())[2]  # block_b
 
-        votes = {
+        attestations = {
             ValidatorIndex(0): build_signed_attestation(
                 ValidatorIndex(0),
                 Checkpoint(root=target_hash, slot=Slot(2)),
@@ -94,7 +94,7 @@ class TestLMDGHOSTAlgorithm:
         head = get_fork_choice_head(
             blocks=sample_blocks,
             root=root_hash,
-            latest_attestations=votes,
+            latest_attestations=attestations,
             min_score=0,
         )
 
@@ -159,8 +159,8 @@ class TestLMDGHOSTAlgorithm:
             block_d_hash: block_d,
         }
 
-        # More votes for fork 2 (C->D)
-        votes = {
+        # More attesations for fork 2 (C->D)
+        attesatations = {
             ValidatorIndex(0): build_signed_attestation(
                 ValidatorIndex(0),
                 Checkpoint(root=block_d_hash, slot=Slot(2)),
@@ -172,21 +172,21 @@ class TestLMDGHOSTAlgorithm:
             ValidatorIndex(2): build_signed_attestation(
                 ValidatorIndex(2),
                 Checkpoint(root=block_b_hash, slot=Slot(2)),
-            ),  # Single vote for fork 1
+            ),  # Single attestation for fork 1
         }
 
         head = get_fork_choice_head(
             blocks=blocks,
             root=genesis_hash,
-            latest_attestations=votes,
+            latest_attestations=attesatations,
             min_score=0,
         )
 
-        # Fork 2 should win with 2 votes vs 1
+        # Fork 2 should win with 2 attestations vs 1
         assert head == block_d_hash
 
-    def test_fork_choice_competing_votes(self) -> None:
-        """Test fork choice algorithm with evenly competing votes."""
+    def test_fork_choice_competing_attestations(self) -> None:
+        """Test fork choice algorithm with evenly competing attestations."""
         # Create simple fork: genesis -> A
         #                             -> B
         genesis = Block(
@@ -222,8 +222,8 @@ class TestLMDGHOSTAlgorithm:
             block_b_hash: block_b,
         }
 
-        # Equal votes for both forks
-        votes = {
+        # Equal attestations for both forks
+        attestations = {
             ValidatorIndex(0): build_signed_attestation(
                 ValidatorIndex(0),
                 Checkpoint(root=block_a_hash, slot=Slot(1)),
@@ -237,7 +237,7 @@ class TestLMDGHOSTAlgorithm:
         head = get_fork_choice_head(
             blocks=blocks,
             root=genesis_hash,
-            latest_attestations=votes,
+            latest_attestations=attestations,
             min_score=0,
         )
 
@@ -280,7 +280,7 @@ class TestLMDGHOSTAlgorithm:
             block_b_hash: block_b,
         }
 
-        # No votes - algorithm breaks tie by lexicographically highest hash
+        # No attestations - algorithm breaks tie by lexicographically highest hash
         head = get_fork_choice_head(
             blocks=blocks,
             root=genesis_hash,
@@ -310,9 +310,9 @@ class TestLMDGHOSTAlgorithm:
             blocks[block_hash] = block
             prev_hash = block_hash
 
-        # Vote for the head block
+        # Attestation for the head block
         head_hash = prev_hash
-        votes = {
+        attestations = {
             ValidatorIndex(0): build_signed_attestation(
                 ValidatorIndex(0),
                 Checkpoint(root=head_hash, slot=Slot(9)),
@@ -323,14 +323,14 @@ class TestLMDGHOSTAlgorithm:
         result = get_fork_choice_head(
             blocks=blocks,
             root=list(blocks.keys())[0],  # Genesis
-            latest_attestations=votes,
+            latest_attestations=attestations,
             min_score=0,
         )
 
         assert result == head_hash
 
-    def test_fork_choice_ancestor_votes(self) -> None:
-        """Test that votes for ancestors are properly counted."""
+    def test_fork_choice_ancestor_attestations(self) -> None:
+        """Test that attestations for ancestors are properly counted."""
         # Create chain: genesis -> A -> B -> C
         genesis = Block(
             slot=Slot(0),
@@ -375,8 +375,8 @@ class TestLMDGHOSTAlgorithm:
             block_c_hash: block_c,
         }
 
-        # Vote for ancestor should still find the head
-        votes = {
+        # Attestation for ancestor should still find the head
+        attestations = {
             ValidatorIndex(0): build_signed_attestation(
                 ValidatorIndex(0),
                 Checkpoint(root=block_a_hash, slot=Slot(1)),
@@ -386,7 +386,7 @@ class TestLMDGHOSTAlgorithm:
         head = get_fork_choice_head(
             blocks=blocks,
             root=genesis_hash,
-            latest_attestations=votes,
+            latest_attestations=attestations,
             min_score=0,
         )
 
@@ -418,8 +418,8 @@ class TestLMDGHOSTAlgorithm:
             block_a_hash: block_a,
         }
 
-        # Single vote shouldn't meet min_score of 2
-        votes = {
+        # Single attestation shouldn't meet min_score of 2
+        attestations = {
             ValidatorIndex(0): build_signed_attestation(
                 ValidatorIndex(0),
                 Checkpoint(root=block_a_hash, slot=Slot(1)),
@@ -429,8 +429,8 @@ class TestLMDGHOSTAlgorithm:
         head = get_fork_choice_head(
             blocks=blocks,
             root=genesis_hash,
-            latest_attestations=votes,
-            min_score=2,  # Require at least 2 votes
+            latest_attestations=attestations,
+            min_score=2,  # Require at least 2 attestations
         )
 
         # Should fall back to root when min_score not met
@@ -445,8 +445,8 @@ class TestStoreBasedForkChoice:
         """Sample configuration."""
         return Config(genesis_time=Uint64(1000))
 
-    def test_store_fork_choice_no_votes(self, config: Config) -> None:
-        """Test Store.get_proposal_head with no votes."""
+    def test_store_fork_choice_no_attestations(self, config: Config) -> None:
+        """Test Store.get_proposal_head with no attestations."""
         genesis_block = Block(
             slot=Slot(0),
             proposer_index=Uint64(0),
