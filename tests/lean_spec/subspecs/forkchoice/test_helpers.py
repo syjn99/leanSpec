@@ -60,13 +60,13 @@ def sample_blocks() -> Dict[Bytes32, Block]:
 class TestForkChoiceHeadFunction:
     """Test the pure get_fork_choice_head helper function."""
 
-    def test_get_fork_choice_head_with_votes(self, sample_blocks: Dict[Bytes32, Block]) -> None:
-        """Test get_fork_choice_head with validator votes."""
+    def test_get_fork_choice_head_with_attestations(self, sample_blocks: Dict[Bytes32, Block]) -> None:
+        """Test get_fork_choice_head with validator attestations."""
         root_hash = list(sample_blocks.keys())[0]
         target_hash = list(sample_blocks.keys())[2]  # block_b
 
-        # Create votes pointing to target
-        votes = {
+        # Create attestations pointing to target
+        attestations = {
             ValidatorIndex(0): build_signed_attestation(
                 ValidatorIndex(0),
                 Checkpoint(root=target_hash, slot=Slot(2)),
@@ -74,13 +74,13 @@ class TestForkChoiceHeadFunction:
         }
 
         head = get_fork_choice_head(
-            blocks=sample_blocks, root=root_hash, latest_attestations=votes, min_score=0
+            blocks=sample_blocks, root=root_hash, latest_attestations=attestations, min_score=0
         )
 
         assert head == target_hash
 
-    def test_get_fork_choice_head_no_votes(self, sample_blocks: Dict[Bytes32, Block]) -> None:
-        """Test get_fork_choice_head with no votes walks to the leaf."""
+    def test_get_fork_choice_head_no_attestations(self, sample_blocks: Dict[Bytes32, Block]) -> None:
+        """Test get_fork_choice_head with no attestations walks to the leaf."""
         root_hash = list(sample_blocks.keys())[0]
         leaf_hash = list(sample_blocks.keys())[2]  # block_b is the leaf
 
@@ -95,8 +95,8 @@ class TestForkChoiceHeadFunction:
         root_hash = list(sample_blocks.keys())[0]
         target_hash = list(sample_blocks.keys())[2]  # block_b
 
-        # Single vote, but require min_score of 2
-        votes = {
+        # Single attestation, but require min_score of 2
+        attestations = {
             ValidatorIndex(0): build_signed_attestation(
                 ValidatorIndex(0),
                 Checkpoint(root=target_hash, slot=Slot(2)),
@@ -104,19 +104,19 @@ class TestForkChoiceHeadFunction:
         }
 
         head = get_fork_choice_head(
-            blocks=sample_blocks, root=root_hash, latest_attestations=votes, min_score=2
+            blocks=sample_blocks, root=root_hash, latest_attestations=attestations, min_score=2
         )
 
         # Should fall back to root since min_score not met
         assert head == root_hash
 
-    def test_get_fork_choice_head_multiple_votes(self, sample_blocks: Dict[Bytes32, Block]) -> None:
-        """Test get_fork_choice_head with multiple votes."""
+    def test_get_fork_choice_head_multiple_attestations(self, sample_blocks: Dict[Bytes32, Block]) -> None:
+        """Test get_fork_choice_head with multiple attestations."""
         root_hash = list(sample_blocks.keys())[0]
         target_hash = list(sample_blocks.keys())[2]  # block_b
 
-        # Multiple votes for same target
-        votes = {
+        # Multiple attestations for same target
+        attestations = {
             ValidatorIndex(0): build_signed_attestation(
                 ValidatorIndex(0),
                 Checkpoint(root=target_hash, slot=Slot(2)),
@@ -132,7 +132,7 @@ class TestForkChoiceHeadFunction:
         }
 
         head = get_fork_choice_head(
-            blocks=sample_blocks, root=root_hash, latest_attestations=votes, min_score=0
+            blocks=sample_blocks, root=root_hash, latest_attestations=attestations, min_score=0
         )
 
         assert head == target_hash
