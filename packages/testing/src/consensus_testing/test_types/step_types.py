@@ -38,7 +38,7 @@ class TickStep(BaseForkChoiceStep):
     Time advancement step.
 
     Advances the fork choice store time to a specific unix timestamp.
-    This triggers interval-based actions like vote processing.
+    This triggers interval-based actions like attestation processing.
     """
 
     step_type: Literal["tick"] = "tick"
@@ -114,8 +114,8 @@ class AttestationStep(BaseForkChoiceStep):
     """
     Attestation processing step.
 
-    Processes an attestation (signed vote) received from gossip.
-    This updates validator vote tracking in the store.
+    Processes an attestation received from gossip.
+    This updates validator attestation tracking in the store.
 
     Note: Attestations included in blocks are processed automatically
     when the block is processed. This step is for gossip attestations.

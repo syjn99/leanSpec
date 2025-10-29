@@ -21,7 +21,7 @@ class BlockBody(Container):
     """
     The body of a block, containing payload data.
 
-    Currently, the main operation is voting. Validators submit votes which are
+    Currently, the main operation is voting. Validators submit attestations which are
     packaged into blocks.
     """
 
