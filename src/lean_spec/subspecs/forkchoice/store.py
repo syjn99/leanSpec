@@ -50,7 +50,7 @@ class Store(Container):
     Forkchoice store tracking chain state and validator attestations.
 
     Maintains all data needed for LMD GHOST fork choice algorithm including
-    blocks, states, checkpoints, and validator attesation records.
+    blocks, states, checkpoints, and validator attestation records.
     """
 
     time: Uint64

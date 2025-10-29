@@ -159,8 +159,8 @@ class TestLMDGHOSTAlgorithm:
             block_d_hash: block_d,
         }
 
-        # More attesations for fork 2 (C->D)
-        attesatations = {
+        # More attestations for fork 2 (C->D)
+        attestations = {
             ValidatorIndex(0): build_signed_attestation(
                 ValidatorIndex(0),
                 Checkpoint(root=block_d_hash, slot=Slot(2)),
@@ -178,7 +178,7 @@ class TestLMDGHOSTAlgorithm:
         head = get_fork_choice_head(
             blocks=blocks,
             root=genesis_hash,
-            latest_attestations=attesatations,
+            latest_attestations=attestations,
             min_score=0,
         )
 

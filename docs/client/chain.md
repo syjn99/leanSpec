@@ -26,7 +26,7 @@ exist.
 ### Consensus Without Epochs
 
 Traditional beacon chain organizes time into epochs. Lean chain removes this.
-All validators are expected to create, sign, and broadcast an attesation in every slot. This simplifies the protocol significantly.
+All validators are expected to create, sign, and broadcast an attestation in every slot. This simplifies the protocol significantly.
 
 ### Signature Handling
 
