@@ -81,7 +81,9 @@ class TestForkChoiceHeadFunction:
 
         assert head == target_hash
 
-    def test_get_fork_choice_head_no_attestations(self, sample_blocks: Dict[Bytes32, Block]) -> None:
+    def test_get_fork_choice_head_no_attestations(
+        self, sample_blocks: Dict[Bytes32, Block]
+    ) -> None:
         """Test get_fork_choice_head with no attestations walks to the leaf."""
         root_hash = list(sample_blocks.keys())[0]
         leaf_hash = list(sample_blocks.keys())[2]  # block_b is the leaf
