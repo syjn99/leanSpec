@@ -161,7 +161,7 @@ class ForkChoiceTest(BaseConsensusFixture):
                     store.advance_time(block_time, has_proposal=True)
 
                     # Process the block (which calls state_transition internally)
-                    store.process_block(signed_block)
+                    store.on_block(signed_block)
 
                 elif isinstance(step, AttestationStep):
                     # Process attestation from gossip (not from block)

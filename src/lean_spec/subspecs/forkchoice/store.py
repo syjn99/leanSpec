@@ -213,14 +213,14 @@ class Store(Container):
         # TODO: Integrate actual aggregated signature verification.
         return all(Signature.is_valid(signature) for signature in signatures)
 
-    def process_block(self, signed_block_with_attestation: SignedBlockWithAttestation) -> None:
+    def on_block(self, signed_block_with_attestation: SignedBlockWithAttestation) -> None:
         """
-        Process new block and update forkchoice state.
+        Handle new block and update forkchoice store.
 
         Adds block to store, processes included attestations, and updates head.
 
         Args:
-            signed_block_with_attestation: Block to process.
+            signed_block_with_attestation: Block that received from the network or created locally.
         """
         block = signed_block_with_attestation.message.block
         proposer_attestation = signed_block_with_attestation.message.proposer_attestation
