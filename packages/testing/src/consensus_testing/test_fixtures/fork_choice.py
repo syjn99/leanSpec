@@ -160,11 +160,11 @@ class ForkChoiceTest(BaseConsensusFixture):
                     # Use spec's advance_time method to handle time progression
                     store.advance_time(block_time, has_proposal=True)
 
-                    # Process the block (which calls state_transition internally)
+                    # Handle block arrival
                     store.on_block(signed_block)
 
                 elif isinstance(step, AttestationStep):
-                    # Process attestation from gossip (not from block)
+                    # Handle attestation arrival from network gossip
                     store.on_attestation(step.attestation, is_from_block=False)
 
                 else:
