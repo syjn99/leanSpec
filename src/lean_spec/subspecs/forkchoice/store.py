@@ -160,19 +160,17 @@ class Store(Container):
         current_slot = Slot(self.time // INTERVALS_PER_SLOT)
         assert data.slot <= Slot(current_slot + Slot(1)), "Attestation too far in future"
 
-    def process_attestation(
+    def on_attestation(
         self,
         signed_attestation: SignedAttestation,
         is_from_block: bool = False,
     ) -> None:
         """
-        Process new attestation (signed validator attestation).
-
         Handles attestations from blocks or network gossip, updating attestation tracking
         according to timing and precedence rules.
 
         Args:
-            signed_attestation: Attestation to process.
+            signed_attestation: Attestation from block or network.
             is_from_block: True if attestation came from block, False if from network.
         """
         # Validate attestation structure and constraints
@@ -259,7 +257,7 @@ class Store(Container):
                 # information encoded in the signature
                 signature=signature,
             )
-            self.process_attestation(signed_attestation, is_from_block=True)
+            self.on_attestation(signed_attestation, is_from_block=True)
 
         # Update forkchoice head
         self.update_head()
@@ -277,7 +275,7 @@ class Store(Container):
         #
         # Hence make sure this gets added to the new attestations so that this doesn't influence
         # this node's validators upcoming attestations
-        self.process_attestation(signed_proposer_attestation, is_from_block=False)
+        self.on_attestation(signed_proposer_attestation, is_from_block=False)
 
     def update_head(self) -> None:
         """Update store's head based on latest justified checkpoint and attestations."""

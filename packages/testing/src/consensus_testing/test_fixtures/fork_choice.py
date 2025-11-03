@@ -165,7 +165,7 @@ class ForkChoiceTest(BaseConsensusFixture):
 
                 elif isinstance(step, AttestationStep):
                     # Process attestation from gossip (not from block)
-                    store.process_attestation(step.attestation, is_from_block=False)
+                    store.on_attestation(step.attestation, is_from_block=False)
 
                 else:
                     raise ValueError(f"Step {i}: unknown step type {type(step).__name__}")
